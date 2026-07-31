@@ -218,19 +218,6 @@ public class PainelListarProdutos extends JPanel {
         return Integer.parseInt(modeloTabela.getValueAt(linhaModelo, 0).toString());
     }
 
-    private String obterNomeProdutoSelecionado() {
-
-        int linhaSelecionada = tabelaProdutos.getSelectedRow();
-
-        if (linhaSelecionada == -1) {
-            return "";
-        }
-
-        int linhaModelo = tabelaProdutos.convertRowIndexToModel(linhaSelecionada);
-
-        return modeloTabela.getValueAt(linhaModelo, 1).toString();
-    }
-
     private void editarProduto() {
 
         int idProduto = obterIdProdutoSelecionado();
@@ -242,7 +229,7 @@ public class PainelListarProdutos extends JPanel {
         if (telaPrincipal == null) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Não foi possível abrir a tela de edição.\nA TelaPrincipal não foi informada.",
+                    "Não foi possível abrir a tela de edição.\nPainel principal não identificado.",
                     "Erro",
                     JOptionPane.ERROR_MESSAGE
             );
@@ -260,7 +247,7 @@ public class PainelListarProdutos extends JPanel {
             return;
         }
 
-        String nomeProduto = obterNomeProdutoSelecionado();
+        String nomeProduto = modeloTabela.getValueAt(tabelaProdutos.getSelectedRow(), 1).toString();
 
         int resposta = JOptionPane.showConfirmDialog(
                 this,
