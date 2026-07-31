@@ -147,4 +147,111 @@ public class ProdutoDAO {
 
         return produtos;
     }
+    
+    
+    public Produto buscarPorId(int idProduto) {
+
+        String sql = "SELECT id_produto, nome, descricao, valor_custo, valor_venda, " +
+                     "quantidade_estoque, estoque_minimo, id_categoria, id_fornecedor " +
+                     "FROM produtos " +
+                     "WHERE id_produto = ? " +
+                     "AND ativo = TRUE";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setInt(1, idProduto);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+
+                    Produto produto = new Produto();
+
+                    produto.setIdProduto(rs.getInt("id_produto"));
+                    produto.setNome(rs.getString("nome"));
+                    produto.setDescricao(rs.getString("descricao"));
+                    produto.setValorCusto(rs.getBigDecimal("valor_custo"));
+                    produto.setValorVenda(rs.getBigDecimal("valor_venda"));
+                    produto.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
+                    produto.setEstoqueMinimo(rs.getInt("estoque_minimo"));
+                    produto.setIdCategoria(rs.getInt("id_categoria"));
+                    produto.setIdFornecedor(rs.getInt("id_fornecedor"));
+
+                    return produto;
+                }
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao buscar produto por ID: " + erro.getMessage());
+        }
+
+        return null;
+    }
+
+    
+    public boolean atualizar(Produto produto) {
+
+        String sql = "UPDATE produtos SET " +
+                     "nome = ?, " +
+                     "descricao = ?, " +
+                     "valor_custo = ?, " +
+                     "valor_venda = ?, " +
+                     "quantidade_estoque = ?, " +
+                     "estoque_minimo = ?, " +
+                     "id_categoria = ?, " +
+                     "id_fornecedor = ? " +
+                     "WHERE id_produto = ?";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setString(1, produto.getNome());
+            stmt.setString(2, produto.getDescricao());
+            stmt.setBigDecimal(3, produto.getValorCusto());
+            stmt.setBigDecimal(4, produto.getValorVenda());
+            stmt.setInt(5, produto.getQuantidadeEstoque());
+            stmt.setInt(6, produto.getEstoqueMinimo());
+            stmt.setInt(7, produto.getIdCategoria());
+            stmt.setInt(8, produto.getIdFornecedor());
+            stmt.setInt(9, produto.getIdProduto());
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao atualizar produto: " + erro.getMessage());
+            return false;
+        }
+    }
+
+    
+    public boolean excluirLogico(int idProduto) {
+
+        String sql = "UPDATE produtos SET ativo = FALSE WHERE id_produto = ?";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setInt(1, idProduto);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao excluir produto: " + erro.getMessage());
+            return false;
+        }
+    }
+
+    
+    
 }

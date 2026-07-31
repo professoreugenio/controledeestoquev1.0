@@ -28,7 +28,16 @@ public class PainelListarProdutos extends JPanel {
     private JTable tabelaProdutos;
     private DefaultTableModel modeloTabela;
 
+    private TelaPrincipal telaPrincipal;
+
     public PainelListarProdutos() {
+        this(null);
+    }
+
+    public PainelListarProdutos(TelaPrincipal telaPrincipal) {
+
+        this.telaPrincipal = telaPrincipal;
+
         setLayout(null);
 
         JLabel lblTitulo = new JLabel("Listagem de Produtos");
@@ -42,7 +51,7 @@ public class PainelListarProdutos extends JPanel {
         add(lblPesquisar);
 
         txtPesquisa = new JTextField();
-        txtPesquisa.setBounds(50, 105, 330, 30);
+        txtPesquisa.setBounds(50, 105, 300, 30);
         add(txtPesquisa);
         txtPesquisa.setColumns(10);
 
@@ -52,7 +61,7 @@ public class PainelListarProdutos extends JPanel {
                 pesquisarProdutos();
             }
         });
-        btnPesquisar.setBounds(400, 105, 120, 30);
+        btnPesquisar.setBounds(370, 105, 110, 30);
         add(btnPesquisar);
 
         JButton btnAtualizar = new JButton("Atualizar");
@@ -61,8 +70,26 @@ public class PainelListarProdutos extends JPanel {
                 carregarProdutos();
             }
         });
-        btnAtualizar.setBounds(540, 105, 120, 30);
+        btnAtualizar.setBounds(490, 105, 110, 30);
         add(btnAtualizar);
+
+        JButton btnEditar = new JButton("Editar");
+        btnEditar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editarProduto();
+            }
+        });
+        btnEditar.setBounds(610, 105, 100, 30);
+        add(btnEditar);
+
+        JButton btnExcluir = new JButton("Excluir");
+        btnExcluir.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                excluirProduto();
+            }
+        });
+        btnExcluir.setBounds(720, 105, 100, 30);
+        add(btnExcluir);
 
         JScrollPane scrollTabelaProdutos = new JScrollPane();
         scrollTabelaProdutos.setBounds(50, 160, 780, 330);
@@ -169,6 +196,103 @@ public class PainelListarProdutos extends JPanel {
                     produto.getQuantidadeEstoque(),
                     produto.getEstoqueMinimo()
             });
+        }
+    }
+
+    private int obterIdProdutoSelecionado() {
+
+        int linhaSelecionada = tabelaProdutos.getSelectedRow();
+
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecione um produto na tabela.",
+                    "Nenhum produto selecionado",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return -1;
+        }
+
+        int linhaModelo = tabelaProdutos.convertRowIndexToModel(linhaSelecionada);
+
+        return Integer.parseInt(modeloTabela.getValueAt(linhaModelo, 0).toString());
+    }
+
+    private String obterNomeProdutoSelecionado() {
+
+        int linhaSelecionada = tabelaProdutos.getSelectedRow();
+
+        if (linhaSelecionada == -1) {
+            return "";
+        }
+
+        int linhaModelo = tabelaProdutos.convertRowIndexToModel(linhaSelecionada);
+
+        return modeloTabela.getValueAt(linhaModelo, 1).toString();
+    }
+
+    private void editarProduto() {
+
+        int idProduto = obterIdProdutoSelecionado();
+
+        if (idProduto == -1) {
+            return;
+        }
+
+        if (telaPrincipal == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Não foi possível abrir a tela de edição.\nA TelaPrincipal não foi informada.",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        telaPrincipal.carregarPainel(new PainelEditarProduto(telaPrincipal, idProduto));
+    }
+
+    private void excluirProduto() {
+
+        int idProduto = obterIdProdutoSelecionado();
+
+        if (idProduto == -1) {
+            return;
+        }
+
+        String nomeProduto = obterNomeProdutoSelecionado();
+
+        int resposta = JOptionPane.showConfirmDialog(
+                this,
+                "Deseja realmente excluir o produto " + nomeProduto + "?",
+                "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (resposta == JOptionPane.YES_OPTION) {
+
+            ProdutoDAO produtoDAO = new ProdutoDAO();
+            boolean excluido = produtoDAO.excluirLogico(idProduto);
+
+            if (excluido) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Produto excluído com sucesso.",
+                        "Exclusão realizada",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                carregarProdutos();
+
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Não foi possível excluir o produto.",
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
     }
 }
