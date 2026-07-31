@@ -72,7 +72,7 @@ public class TelaPrincipal extends JFrame {
 		itemListarProdutos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				carregarPainel(new PainelListarProdutos(TelaPrincipal.this));
+				carregarPainel(new PainelListarClientes(TelaPrincipal.this));
 			}
 		});
 		menuProdutos.add(itemListarProdutos);
@@ -88,7 +88,7 @@ public class TelaPrincipal extends JFrame {
 		JMenuItem itemListarClientes = new JMenuItem("Listar Clientes");
 		itemListarClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				carregarPainel(new PainelListarClientes());
+				 carregarPainel(new PainelListarClientes(TelaPrincipal.this));
 			}
 		});
 		menuClientes.add(itemListarClientes);

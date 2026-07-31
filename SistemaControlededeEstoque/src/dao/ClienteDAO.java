@@ -116,4 +116,101 @@ public class ClienteDAO {
 
         return clientes;
     }
+    
+    
+    public Cliente buscarPorId(int idCliente) {
+
+        String sql = "SELECT id_cliente, nome, cpf, telefone, email, cidade, ativo " +
+                     "FROM clientes " +
+                     "WHERE id_cliente = ? " +
+                     "AND ativo = TRUE";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setInt(1, idCliente);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+
+                    Cliente cliente = new Cliente();
+
+                    cliente.setIdCliente(rs.getInt("id_cliente"));
+                    cliente.setNome(rs.getString("nome"));
+                    cliente.setCpf(rs.getString("cpf"));
+                    cliente.setTelefone(rs.getString("telefone"));
+                    cliente.setEmail(rs.getString("email"));
+                    cliente.setCidade(rs.getString("cidade"));
+                    cliente.setAtivo(rs.getBoolean("ativo"));
+
+                    return cliente;
+                }
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao buscar cliente por ID: " + erro.getMessage());
+        }
+
+        return null;
+    }
+    
+    
+    public boolean atualizar(Cliente cliente) {
+
+        String sql = "UPDATE clientes SET " +
+                     "nome = ?, " +
+                     "cpf = ?, " +
+                     "telefone = ?, " +
+                     "email = ?, " +
+                     "cidade = ? " +
+                     "WHERE id_cliente = ?";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setString(1, cliente.getNome());
+            stmt.setString(2, cliente.getCpf());
+            stmt.setString(3, cliente.getTelefone());
+            stmt.setString(4, cliente.getEmail());
+            stmt.setString(5, cliente.getCidade());
+            stmt.setInt(6, cliente.getIdCliente());
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao atualizar cliente: " + erro.getMessage());
+            return false;
+        }
+    }
+
+    
+    public boolean excluirLogico(int idCliente) {
+
+        String sql = "UPDATE clientes SET ativo = FALSE WHERE id_cliente = ?";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setInt(1, idCliente);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao excluir cliente: " + erro.getMessage());
+            return false;
+        }
+    }
+
+
 }

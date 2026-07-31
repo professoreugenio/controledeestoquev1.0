@@ -27,7 +27,16 @@ public class PainelListarClientes extends JPanel {
     private JTable tabelaClientes;
     private DefaultTableModel modeloTabela;
 
+    private TelaPrincipal telaPrincipal;
+
     public PainelListarClientes() {
+        this(null);
+    }
+
+    public PainelListarClientes(TelaPrincipal telaPrincipal) {
+
+        this.telaPrincipal = telaPrincipal;
+
         setLayout(null);
 
         JLabel lblTitulo = new JLabel("Listagem de Clientes");
@@ -41,7 +50,7 @@ public class PainelListarClientes extends JPanel {
         add(lblPesquisar);
 
         txtPesquisa = new JTextField();
-        txtPesquisa.setBounds(50, 105, 330, 30);
+        txtPesquisa.setBounds(50, 105, 300, 30);
         add(txtPesquisa);
         txtPesquisa.setColumns(10);
 
@@ -51,7 +60,7 @@ public class PainelListarClientes extends JPanel {
                 pesquisarClientes();
             }
         });
-        btnPesquisar.setBounds(400, 105, 120, 30);
+        btnPesquisar.setBounds(370, 105, 110, 30);
         add(btnPesquisar);
 
         JButton btnAtualizar = new JButton("Atualizar");
@@ -60,8 +69,26 @@ public class PainelListarClientes extends JPanel {
                 carregarClientes();
             }
         });
-        btnAtualizar.setBounds(540, 105, 120, 30);
+        btnAtualizar.setBounds(490, 105, 110, 30);
         add(btnAtualizar);
+
+        JButton btnEditar = new JButton("Editar");
+        btnEditar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editarCliente();
+            }
+        });
+        btnEditar.setBounds(610, 105, 100, 30);
+        add(btnEditar);
+
+        JButton btnExcluir = new JButton("Excluir");
+        btnExcluir.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                excluirCliente();
+            }
+        });
+        btnExcluir.setBounds(720, 105, 100, 30);
+        add(btnExcluir);
 
         JScrollPane scrollTabelaClientes = new JScrollPane();
         scrollTabelaClientes.setBounds(50, 160, 780, 330);
@@ -162,6 +189,103 @@ public class PainelListarClientes extends JPanel {
                     cliente.getEmail(),
                     cliente.getCidade()
             });
+        }
+    }
+
+    private int obterIdClienteSelecionado() {
+
+        int linhaSelecionada = tabelaClientes.getSelectedRow();
+
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecione um cliente na tabela.",
+                    "Nenhum cliente selecionado",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return -1;
+        }
+
+        int linhaModelo = tabelaClientes.convertRowIndexToModel(linhaSelecionada);
+
+        return Integer.parseInt(modeloTabela.getValueAt(linhaModelo, 0).toString());
+    }
+
+    private String obterNomeClienteSelecionado() {
+
+        int linhaSelecionada = tabelaClientes.getSelectedRow();
+
+        if (linhaSelecionada == -1) {
+            return "";
+        }
+
+        int linhaModelo = tabelaClientes.convertRowIndexToModel(linhaSelecionada);
+
+        return modeloTabela.getValueAt(linhaModelo, 1).toString();
+    }
+
+    private void editarCliente() {
+
+        int idCliente = obterIdClienteSelecionado();
+
+        if (idCliente == -1) {
+            return;
+        }
+
+        if (telaPrincipal == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Não foi possível abrir a tela de edição.\nPainel principal não identificado.",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        telaPrincipal.carregarPainel(new PainelEditarCliente(telaPrincipal, idCliente));
+    }
+
+    private void excluirCliente() {
+
+        int idCliente = obterIdClienteSelecionado();
+
+        if (idCliente == -1) {
+            return;
+        }
+
+        String nomeCliente = obterNomeClienteSelecionado();
+
+        int resposta = JOptionPane.showConfirmDialog(
+                this,
+                "Deseja realmente excluir o cliente " + nomeCliente + "?",
+                "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (resposta == JOptionPane.YES_OPTION) {
+
+            ClienteDAO clienteDAO = new ClienteDAO();
+            boolean excluido = clienteDAO.excluirLogico(idCliente);
+
+            if (excluido) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Cliente excluído com sucesso.",
+                        "Exclusão realizada",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                carregarClientes();
+
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Não foi possível excluir o cliente.",
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
     }
 }

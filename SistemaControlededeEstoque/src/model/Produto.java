@@ -122,4 +122,10 @@ public class Produto {
     public void setNomeFornecedor(String nomeFornecedor) {
         this.nomeFornecedor = nomeFornecedor;
     }
+    
+    @Override
+    public String toString() {
+        return nome;
+    }
+
 }
