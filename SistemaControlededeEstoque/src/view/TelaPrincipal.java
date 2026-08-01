@@ -15,6 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import model.Usuario;
+import javax.swing.KeyStroke;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 public class TelaPrincipal extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -53,6 +56,7 @@ public class TelaPrincipal extends JFrame {
 		JMenu menuInicio = new JMenu("Início");
 		menuBar.add(menuInicio);
 		JMenuItem itemDashboard = new JMenuItem("Dashboard");
+		itemDashboard.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_DOWN_MASK));
 		itemDashboard.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				carregarPainel(new PainelDashboard());
@@ -72,7 +76,7 @@ public class TelaPrincipal extends JFrame {
 		itemListarProdutos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				carregarPainel(new PainelListarClientes(TelaPrincipal.this));
+				carregarPainel(new PainelListarProdutos(TelaPrincipal.this));
 			}
 		});
 		menuProdutos.add(itemListarProdutos);
@@ -121,6 +125,9 @@ public class TelaPrincipal extends JFrame {
 		mnNewMenu.add(mntmNewMenuItem);
 		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Novo Usuário");
 		mnNewMenu.add(mntmNewMenuItem_1);
+		
+		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Listar Usuários");
+		mnNewMenu.add(mntmNewMenuItem_2);
 		JMenu menuSistema = new JMenu("Sistema");
 		menuBar.add(menuSistema);
 		JMenuItem itemSair = new JMenuItem("Sair");
