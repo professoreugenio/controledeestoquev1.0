@@ -22,7 +22,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-
 import util.PermissaoUtil;
 
 public class TelaPrincipal extends JFrame {
@@ -68,18 +67,14 @@ public class TelaPrincipal extends JFrame {
 				carregarPainel(new PainelDashboard());
 			}
 		});
-		
-		
-		
+
 		addWindowListener(new WindowAdapter() {
-		    @Override
-		    public void windowClosing(WindowEvent e) {
-		        confirmarSaidaParaLogin();
-		    }
+			@Override
+			public void windowClosing(WindowEvent e) {
+				confirmarSaidaParaLogin();
+			}
 		});
 
-		
-		
 		menuInicio.add(itemDashboard);
 		JMenu menuProdutos = new JMenu("Produtos");
 		menuBar.add(menuProdutos);
@@ -100,7 +95,7 @@ public class TelaPrincipal extends JFrame {
 		});
 		menuProdutos.add(itemListarProdutos);
 
-		if ("ADMINISTRADOR".equalsIgnoreCase(usuarioLogado.getPerfil().trim())) {
+		if (usuarioLogado.getPerfil().equals("ADMINISTRADOR")) {
 
 			JMenu menuClientes = new JMenu("Clientes");
 			menuBar.add(menuClientes);
@@ -144,7 +139,7 @@ public class TelaPrincipal extends JFrame {
 		});
 		menuEstoque.add(itemSaidaEstoque);
 
-		if ("ADMINISTRADOR".equalsIgnoreCase(usuarioLogado.getPerfil().trim())) {
+		if (usuarioLogado.getPerfil().equals("ADMINISTRADOR")) {
 
 			JMenu mnNewMenu = new JMenu("Usuário");
 			menuBar.add(mnNewMenu);
@@ -203,45 +198,36 @@ public class TelaPrincipal extends JFrame {
 		exibirUsuarioLogado();
 		carregarPainel(new PainelDashboard());
 	}
-	
-	
+
 	private void confirmarSaidaParaLogin() {
 
-	    int resposta = JOptionPane.showConfirmDialog(
-	            this,
-	            "Deseja sair da tela principal e voltar para o login?",
-	            "Confirmar saída",
-	            JOptionPane.YES_NO_OPTION,
-	            JOptionPane.QUESTION_MESSAGE
-	    );
+		int resposta = JOptionPane.showConfirmDialog(this, "Deseja sair da tela principal e voltar para o login?",
+				"Confirmar saída", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-	    if (resposta == JOptionPane.YES_OPTION) {
-	        voltarParaLogin();
-	    }
+		if (resposta == JOptionPane.YES_OPTION) {
+			voltarParaLogin();
+		}
 	}
 
-	
 	private void voltarParaLogin() {
 
-	    fecharPaineis();
+		fecharPaineis();
 
-	    TelaLogin telaLogin = new TelaLogin();
-	    telaLogin.setLocationRelativeTo(null);
-	    telaLogin.setVisible(true);
+		TelaLogin telaLogin = new TelaLogin();
+		telaLogin.setLocationRelativeTo(null);
+		telaLogin.setVisible(true);
 
-	    dispose();
+		dispose();
 	}
 
-	
 	private void fecharPaineis() {
 
-	    if (painelConteudo != null) {
-	        painelConteudo.removeAll();
-	        painelConteudo.revalidate();
-	        painelConteudo.repaint();
-	    }
+		if (painelConteudo != null) {
+			painelConteudo.removeAll();
+			painelConteudo.revalidate();
+			painelConteudo.repaint();
+		}
 	}
-
 
 	public void carregarPainel(JPanel painel) {
 		painelConteudo.removeAll();
@@ -274,7 +260,7 @@ public class TelaPrincipal extends JFrame {
 	}
 
 	private void sair() {
-	    confirmarSaidaParaLogin();
+		confirmarSaidaParaLogin();
 	}
 
 }
