@@ -29,6 +29,9 @@ public class PainelSaidaEstoque extends JPanel {
     private JTextField txtValorUnitario;
     private JTextArea txtObservacao;
     private JLabel lblEstoqueAtual;
+    private JTextField txtNotaFiscal;
+   
+
 
     public PainelSaidaEstoque() {
         setLayout(null);
@@ -57,19 +60,19 @@ public class PainelSaidaEstoque extends JPanel {
         add(lblEstoqueAtual);
 
         JLabel lblQuantidade = new JLabel("Quantidade");
-        lblQuantidade.setBounds(80, 165, 120, 20);
+        lblQuantidade.setBounds(250, 166, 120, 20);
         add(lblQuantidade);
 
         txtQuantidade = new JTextField();
-        txtQuantidade.setBounds(80, 190, 150, 30);
+        txtQuantidade.setBounds(250, 191, 150, 30);
         add(txtQuantidade);
 
         JLabel lblValorUnitario = new JLabel("Valor Unitário");
-        lblValorUnitario.setBounds(260, 165, 120, 20);
+        lblValorUnitario.setBounds(430, 166, 120, 20);
         add(lblValorUnitario);
 
         txtValorUnitario = new JTextField();
-        txtValorUnitario.setBounds(260, 190, 150, 30);
+        txtValorUnitario.setBounds(430, 191, 150, 30);
         add(txtValorUnitario);
 
         JLabel lblObservacao = new JLabel("Observação");
@@ -100,6 +103,14 @@ public class PainelSaidaEstoque extends JPanel {
         });
         btnLimpar.setBounds(260, 390, 120, 35);
         add(btnLimpar);
+        
+        txtNotaFiscal = new JTextField();
+        txtNotaFiscal.setBounds(78, 191, 150, 30);
+        add(txtNotaFiscal);
+        
+        JLabel lblNotaFiscal = new JLabel("Nota Fiscal");
+        lblNotaFiscal.setBounds(78, 166, 120, 20);
+        add(lblNotaFiscal);
 
         carregarProdutos();
     }
@@ -133,6 +144,16 @@ public class PainelSaidaEstoque extends JPanel {
     }
 
     private void registrarSaida() {
+    	
+    	
+    	String notaFiscal = txtNotaFiscal.getText().trim();
+
+    	if (notaFiscal.isEmpty()) {
+    	    JOptionPane.showMessageDialog(this, "Informe o número da nota fiscal.");
+    	    txtNotaFiscal.requestFocus();
+    	    return;
+    	}
+
 
         Produto produtoSelecionado = (Produto) comboProduto.getSelectedItem();
 
@@ -183,10 +204,12 @@ public class PainelSaidaEstoque extends JPanel {
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque(
                     produtoSelecionado.getIdProduto(),
                     "SAIDA",
+                    notaFiscal,
                     quantidade,
                     valorUnitario,
                     observacao
             );
+
 
             MovimentacaoEstoqueDAO dao = new MovimentacaoEstoqueDAO();
             boolean registrado = dao.registrarSaida(movimentacao);
@@ -208,6 +231,8 @@ public class PainelSaidaEstoque extends JPanel {
         txtQuantidade.setText("");
         txtValorUnitario.setText("");
         txtObservacao.setText("");
+        txtNotaFiscal.setText("");
+
 
         if (comboProduto.getItemCount() > 0) {
             comboProduto.setSelectedIndex(0);

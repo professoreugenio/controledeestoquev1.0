@@ -16,64 +16,83 @@ import javax.swing.SwingConstants;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
-import dao.ProdutoDAO;
-import model.Produto;
+import dao.MovimentacaoEstoqueDAO;
+import model.MovimentacaoEstoque;
 import util.Formatador;
 
 public class PainelListarEstoque extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private JTextField txtPesquisa;
-    private JTable tabelaEstoque;
+    private JTextField txtNotaFiscalPesquisa;
+    private JTextField txtDataPesquisa;
+    private JTable tabelaMovimentacoes;
     private DefaultTableModel modeloTabela;
 
     public PainelListarEstoque() {
         setLayout(null);
 
-        JLabel lblTitulo = new JLabel("Listagem de Estoque");
+        JLabel lblTitulo = new JLabel("Histórico de Movimentações de Estoque");
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Tahoma", Font.BOLD, 22));
-        lblTitulo.setBounds(240, 20, 350, 30);
+        lblTitulo.setBounds(190, 20, 520, 30);
         add(lblTitulo);
 
-        JLabel lblPesquisar = new JLabel("Pesquisar Produto");
-        lblPesquisar.setBounds(50, 80, 150, 20);
-        add(lblPesquisar);
+        JLabel lblNotaFiscal = new JLabel("Pesquisar Nº Nota Fiscal");
+        lblNotaFiscal.setBounds(50, 80, 180, 20);
+        add(lblNotaFiscal);
 
-        txtPesquisa = new JTextField();
-        txtPesquisa.setBounds(50, 105, 330, 30);
-        add(txtPesquisa);
+        txtNotaFiscalPesquisa = new JTextField();
+        txtNotaFiscalPesquisa.setBounds(50, 105, 200, 30);
+        add(txtNotaFiscalPesquisa);
 
-        JButton btnPesquisar = new JButton("Pesquisar");
-        btnPesquisar.addActionListener(new ActionListener() {
+        JButton btnPesquisarNota = new JButton("Pesquisar NF");
+        btnPesquisarNota.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                pesquisarEstoque();
+                pesquisarPorNotaFiscal();
             }
         });
-        btnPesquisar.setBounds(400, 105, 120, 30);
-        add(btnPesquisar);
+        btnPesquisarNota.setBounds(260, 105, 130, 30);
+        add(btnPesquisarNota);
+
+        JLabel lblData = new JLabel("Pesquisar Data");
+        lblData.setBounds(420, 80, 150, 20);
+        add(lblData);
+
+        txtDataPesquisa = new JTextField();
+        txtDataPesquisa.setToolTipText("Digite no formato yyyy-MM-dd");
+        txtDataPesquisa.setBounds(420, 105, 150, 30);
+        add(txtDataPesquisa);
+
+        JButton btnPesquisarData = new JButton("Pesquisar Data");
+        btnPesquisarData.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                pesquisarPorData();
+            }
+        });
+        btnPesquisarData.setBounds(580, 105, 140, 30);
+        add(btnPesquisarData);
 
         JButton btnAtualizar = new JButton("Atualizar");
         btnAtualizar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                carregarEstoque();
+                carregarMovimentacoes();
             }
         });
-        btnAtualizar.setBounds(540, 105, 120, 30);
+        btnAtualizar.setBounds(740, 105, 120, 30);
         add(btnAtualizar);
 
-        JScrollPane scrollTabelaEstoque = new JScrollPane();
-        scrollTabelaEstoque.setBounds(50, 160, 820, 330);
-        add(scrollTabelaEstoque);
+        JScrollPane scrollTabela = new JScrollPane();
+        scrollTabela.setBounds(50, 160, 850, 350);
+        add(scrollTabela);
 
-        tabelaEstoque = new JTable();
-        tabelaEstoque.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabelaEstoque.getTableHeader().setReorderingAllowed(false);
-        scrollTabelaEstoque.setViewportView(tabelaEstoque);
+        tabelaMovimentacoes = new JTable();
+        tabelaMovimentacoes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tabelaMovimentacoes.getTableHeader().setReorderingAllowed(false);
+        scrollTabela.setViewportView(tabelaMovimentacoes);
 
         configurarTabela();
-        carregarEstoque();
+        carregarMovimentacoes();
     }
 
     private void configurarTabela() {
@@ -90,89 +109,102 @@ public class PainelListarEstoque extends JPanel {
 
         modeloTabela.addColumn("ID");
         modeloTabela.addColumn("Produto");
-        modeloTabela.addColumn("Categoria");
-        modeloTabela.addColumn("Fornecedor");
-        modeloTabela.addColumn("Valor Venda");
-        modeloTabela.addColumn("Estoque Atual");
-        modeloTabela.addColumn("Estoque Mínimo");
-        modeloTabela.addColumn("Situação");
+        modeloTabela.addColumn("Tipo");
+        modeloTabela.addColumn("Nº Nota Fiscal");
+        modeloTabela.addColumn("Quantidade");
+        modeloTabela.addColumn("Valor Unitário");
+        modeloTabela.addColumn("Data");
+        modeloTabela.addColumn("Observação");
 
-        tabelaEstoque.setModel(modeloTabela);
+        tabelaMovimentacoes.setModel(modeloTabela);
 
-        tabelaEstoque.getColumnModel().getColumn(0).setPreferredWidth(40);
-        tabelaEstoque.getColumnModel().getColumn(1).setPreferredWidth(180);
-        tabelaEstoque.getColumnModel().getColumn(2).setPreferredWidth(120);
-        tabelaEstoque.getColumnModel().getColumn(3).setPreferredWidth(140);
-        tabelaEstoque.getColumnModel().getColumn(4).setPreferredWidth(90);
-        tabelaEstoque.getColumnModel().getColumn(5).setPreferredWidth(90);
-        tabelaEstoque.getColumnModel().getColumn(6).setPreferredWidth(90);
-        tabelaEstoque.getColumnModel().getColumn(7).setPreferredWidth(110);
+        tabelaMovimentacoes.getColumnModel().getColumn(0).setPreferredWidth(40);
+        tabelaMovimentacoes.getColumnModel().getColumn(1).setPreferredWidth(180);
+        tabelaMovimentacoes.getColumnModel().getColumn(2).setPreferredWidth(80);
+        tabelaMovimentacoes.getColumnModel().getColumn(3).setPreferredWidth(120);
+        tabelaMovimentacoes.getColumnModel().getColumn(4).setPreferredWidth(80);
+        tabelaMovimentacoes.getColumnModel().getColumn(5).setPreferredWidth(100);
+        tabelaMovimentacoes.getColumnModel().getColumn(6).setPreferredWidth(130);
+        tabelaMovimentacoes.getColumnModel().getColumn(7).setPreferredWidth(200);
     }
 
-    private void carregarEstoque() {
+    private void carregarMovimentacoes() {
 
         modeloTabela.setRowCount(0);
 
-        ProdutoDAO produtoDAO = new ProdutoDAO();
-        List<Produto> produtos = produtoDAO.listarEstoque();
+        MovimentacaoEstoqueDAO dao = new MovimentacaoEstoqueDAO();
+        List<MovimentacaoEstoque> movimentacoes = dao.listarMovimentacoes();
 
-        preencherTabela(produtos);
+        preencherTabela(movimentacoes);
 
-        txtPesquisa.setText("");
-        txtPesquisa.requestFocus();
+        txtNotaFiscalPesquisa.setText("");
+        txtDataPesquisa.setText("");
+        txtNotaFiscalPesquisa.requestFocus();
     }
 
-    private void pesquisarEstoque() {
+    private void pesquisarPorNotaFiscal() {
 
-        String pesquisa = txtPesquisa.getText().trim();
+        String notaFiscal = txtNotaFiscalPesquisa.getText().trim();
 
-        if (pesquisa.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Digite o nome do produto para pesquisar.",
-                    "Campo obrigatório",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            txtPesquisa.requestFocus();
+        if (notaFiscal.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Digite o número da nota fiscal.");
+            txtNotaFiscalPesquisa.requestFocus();
             return;
         }
 
         modeloTabela.setRowCount(0);
 
-        ProdutoDAO produtoDAO = new ProdutoDAO();
-        List<Produto> produtos = produtoDAO.pesquisarEstoquePorNome(pesquisa);
+        MovimentacaoEstoqueDAO dao = new MovimentacaoEstoqueDAO();
+        List<MovimentacaoEstoque> movimentacoes = dao.pesquisarPorNotaFiscal(notaFiscal);
 
-        preencherTabela(produtos);
+        preencherTabela(movimentacoes);
 
-        if (produtos.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Nenhum produto encontrado.",
-                    "Resultado da pesquisa",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+        if (movimentacoes.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhuma movimentação encontrada para esta nota fiscal.");
         }
     }
 
-    private void preencherTabela(List<Produto> produtos) {
+    private void pesquisarPorData() {
 
-        for (Produto produto : produtos) {
+        String data = txtDataPesquisa.getText().trim();
 
-            String situacao = "Normal";
+        if (data.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Digite a data no formato yyyy-MM-dd.");
+            txtDataPesquisa.requestFocus();
+            return;
+        }
 
-            if (produto.getQuantidadeEstoque() <= produto.getEstoqueMinimo()) {
-                situacao = "Estoque Baixo";
-            }
+        if (!data.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            JOptionPane.showMessageDialog(this, "Formato inválido. Use yyyy-MM-dd. Exemplo: 2026-08-02");
+            txtDataPesquisa.requestFocus();
+            return;
+        }
+
+        modeloTabela.setRowCount(0);
+
+        MovimentacaoEstoqueDAO dao = new MovimentacaoEstoqueDAO();
+        List<MovimentacaoEstoque> movimentacoes = dao.pesquisarPorData(data);
+
+        preencherTabela(movimentacoes);
+
+        if (movimentacoes.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhuma movimentação encontrada para esta data.");
+        }
+    }
+
+    private void preencherTabela(List<MovimentacaoEstoque> movimentacoes) {
+
+        for (MovimentacaoEstoque mov : movimentacoes) {
 
             modeloTabela.addRow(new Object[] {
-                    produto.getIdProduto(),
-                    produto.getNome(),
-                    produto.getNomeCategoria(),
-                    produto.getNomeFornecedor(),
-                    Formatador.moeda(produto.getValorVenda()),
-                    produto.getQuantidadeEstoque(),
-                    produto.getEstoqueMinimo(),
-                    situacao
+                    mov.getIdMovimentacao(),
+                    mov.getNomeProduto(),
+                    mov.getTipo(),
+                    mov.getNrNotaFiscal(),
+                    mov.getQuantidade(),
+                    Formatador.moeda(mov.getValorUnitario()),
+                    mov.getCriadoEm(),
+                    mov.getObservacao()
             });
         }
     }

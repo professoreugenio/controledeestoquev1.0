@@ -28,6 +28,7 @@ public class PainelEntradaEstoque extends JPanel {
     private JTextField txtQuantidade;
     private JTextField txtValorUnitario;
     private JTextArea txtObservacao;
+    private JTextField txtNotaFiscal;
 
     public PainelEntradaEstoque() {
         setLayout(null);
@@ -47,19 +48,19 @@ public class PainelEntradaEstoque extends JPanel {
         add(comboProduto);
 
         JLabel lblQuantidade = new JLabel("Quantidade");
-        lblQuantidade.setBounds(80, 165, 120, 20);
+        lblQuantidade.setBounds(260, 166, 120, 20);
         add(lblQuantidade);
 
         txtQuantidade = new JTextField();
-        txtQuantidade.setBounds(80, 190, 150, 30);
+        txtQuantidade.setBounds(260, 191, 84, 30);
         add(txtQuantidade);
 
         JLabel lblValorUnitario = new JLabel("Valor Unitário");
-        lblValorUnitario.setBounds(260, 165, 120, 20);
+        lblValorUnitario.setBounds(373, 166, 120, 20);
         add(lblValorUnitario);
 
         txtValorUnitario = new JTextField();
-        txtValorUnitario.setBounds(260, 190, 150, 30);
+        txtValorUnitario.setBounds(373, 191, 127, 30);
         add(txtValorUnitario);
 
         JLabel lblObservacao = new JLabel("Observação");
@@ -90,6 +91,14 @@ public class PainelEntradaEstoque extends JPanel {
         });
         btnLimpar.setBounds(260, 390, 120, 35);
         add(btnLimpar);
+        
+        JLabel lblNotaFiscal = new JLabel("Nº Nota Fiscal");
+        lblNotaFiscal.setBounds(80, 169, 120, 20);
+        add(lblNotaFiscal);
+        
+        txtNotaFiscal = new JTextField();
+        txtNotaFiscal.setBounds(80, 191, 150, 30);
+        add(txtNotaFiscal);
 
         carregarProdutos();
     }
@@ -114,9 +123,16 @@ public class PainelEntradaEstoque extends JPanel {
             return;
         }
 
+        String notaFiscal = txtNotaFiscal.getText().trim();
         String quantidadeTexto = txtQuantidade.getText().trim();
         String valorTexto = txtValorUnitario.getText().trim().replace(",", ".");
         String observacao = txtObservacao.getText().trim();
+
+        if (notaFiscal.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Informe o número da nota fiscal.");
+            txtNotaFiscal.requestFocus();
+            return;
+        }
 
         if (quantidadeTexto.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Informe a quantidade.");
@@ -149,6 +165,7 @@ public class PainelEntradaEstoque extends JPanel {
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque(
                     produtoSelecionado.getIdProduto(),
                     "ENTRADA",
+                    notaFiscal,
                     quantidade,
                     valorUnitario,
                     observacao
@@ -169,10 +186,13 @@ public class PainelEntradaEstoque extends JPanel {
         }
     }
 
+
     private void limparCampos() {
         txtQuantidade.setText("");
         txtValorUnitario.setText("");
         txtObservacao.setText("");
+        txtNotaFiscal.setText("");
+
 
         if (comboProduto.getItemCount() > 0) {
             comboProduto.setSelectedIndex(0);

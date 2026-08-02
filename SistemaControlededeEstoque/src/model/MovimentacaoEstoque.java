@@ -1,7 +1,6 @@
 package model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class MovimentacaoEstoque {
 
@@ -9,18 +8,21 @@ public class MovimentacaoEstoque {
     private int idProduto;
     private String nomeProduto;
     private String tipo;
+    private String nrNotaFiscal;
     private int quantidade;
     private BigDecimal valorUnitario;
     private String observacao;
-    private LocalDateTime criadoEm;
+    private String criadoEm;
 
     public MovimentacaoEstoque() {
 
     }
 
-    public MovimentacaoEstoque(int idProduto, String tipo, int quantidade, BigDecimal valorUnitario, String observacao) {
+    public MovimentacaoEstoque(int idProduto, String tipo, String nrNotaFiscal,
+                               int quantidade, BigDecimal valorUnitario, String observacao) {
         this.idProduto = idProduto;
         this.tipo = tipo;
+        this.nrNotaFiscal = nrNotaFiscal;
         this.quantidade = quantidade;
         this.valorUnitario = valorUnitario;
         this.observacao = observacao;
@@ -58,6 +60,14 @@ public class MovimentacaoEstoque {
         this.tipo = tipo;
     }
 
+    public String getNrNotaFiscal() {
+        return nrNotaFiscal;
+    }
+
+    public void setNrNotaFiscal(String nrNotaFiscal) {
+        this.nrNotaFiscal = nrNotaFiscal;
+    }
+
     public int getQuantidade() {
         return quantidade;
     }
@@ -82,11 +92,11 @@ public class MovimentacaoEstoque {
         this.observacao = observacao;
     }
 
-    public LocalDateTime getCriadoEm() {
+    public String getCriadoEm() {
         return criadoEm;
     }
 
-    public void setCriadoEm(LocalDateTime criadoEm) {
+    public void setCriadoEm(String criadoEm) {
         this.criadoEm = criadoEm;
     }
 }

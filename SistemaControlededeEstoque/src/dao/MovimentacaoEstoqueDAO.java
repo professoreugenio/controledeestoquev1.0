@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import model.MovimentacaoEstoque;
 
@@ -12,8 +14,8 @@ public class MovimentacaoEstoqueDAO {
     public boolean registrarEntrada(MovimentacaoEstoque movimentacao) {
 
         String sqlMovimentacao = "INSERT INTO movimentacoes_estoque " +
-                                 "(id_produto, tipo, quantidade, valor_unitario, observacao) " +
-                                 "VALUES (?, ?, ?, ?, ?)";
+                                 "(id_produto, tipo, nr_notafiscal, quantidade, valor_unitario, observacao) " +
+                                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         String sqlAtualizaProduto = "UPDATE produtos " +
                                     "SET quantidade_estoque = quantidade_estoque + ? " +
@@ -28,9 +30,10 @@ public class MovimentacaoEstoqueDAO {
             try (PreparedStatement stmtMov = con.prepareStatement(sqlMovimentacao)) {
                 stmtMov.setInt(1, movimentacao.getIdProduto());
                 stmtMov.setString(2, "ENTRADA");
-                stmtMov.setInt(3, movimentacao.getQuantidade());
-                stmtMov.setBigDecimal(4, movimentacao.getValorUnitario());
-                stmtMov.setString(5, movimentacao.getObservacao());
+                stmtMov.setString(3, movimentacao.getNrNotaFiscal());
+                stmtMov.setInt(4, movimentacao.getQuantidade());
+                stmtMov.setBigDecimal(5, movimentacao.getValorUnitario());
+                stmtMov.setString(6, movimentacao.getObservacao());
                 stmtMov.executeUpdate();
             }
 
@@ -74,8 +77,8 @@ public class MovimentacaoEstoqueDAO {
         String sqlConsultaEstoque = "SELECT quantidade_estoque FROM produtos WHERE id_produto = ? FOR UPDATE";
 
         String sqlMovimentacao = "INSERT INTO movimentacoes_estoque " +
-                                 "(id_produto, tipo, quantidade, valor_unitario, observacao) " +
-                                 "VALUES (?, ?, ?, ?, ?)";
+                                 "(id_produto, tipo, nr_notafiscal, quantidade, valor_unitario, observacao) " +
+                                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         String sqlAtualizaProduto = "UPDATE produtos " +
                                     "SET quantidade_estoque = quantidade_estoque - ? " +
@@ -107,9 +110,10 @@ public class MovimentacaoEstoqueDAO {
             try (PreparedStatement stmtMov = con.prepareStatement(sqlMovimentacao)) {
                 stmtMov.setInt(1, movimentacao.getIdProduto());
                 stmtMov.setString(2, "SAIDA");
-                stmtMov.setInt(3, movimentacao.getQuantidade());
-                stmtMov.setBigDecimal(4, movimentacao.getValorUnitario());
-                stmtMov.setString(5, movimentacao.getObservacao());
+                stmtMov.setString(3, movimentacao.getNrNotaFiscal());
+                stmtMov.setInt(4, movimentacao.getQuantidade());
+                stmtMov.setBigDecimal(5, movimentacao.getValorUnitario());
+                stmtMov.setString(6, movimentacao.getObservacao());
                 stmtMov.executeUpdate();
             }
 
@@ -146,5 +150,153 @@ public class MovimentacaoEstoqueDAO {
                 }
             }
         }
+    }
+
+    public List<MovimentacaoEstoque> listarMovimentacoes() {
+
+        List<MovimentacaoEstoque> movimentacoes = new ArrayList<>();
+
+        String sql = "SELECT " +
+                     "m.id_movimentacao, " +
+                     "p.nome AS produto, " +
+                     "m.tipo, " +
+                     "m.nr_notafiscal, " +
+                     "m.quantidade, " +
+                     "m.valor_unitario, " +
+                     "m.observacao, " +
+                     "DATE_FORMAT(m.criado_em, '%d/%m/%Y %H:%i') AS criado_em_formatado " +
+                     "FROM movimentacoes_estoque m " +
+                     "INNER JOIN produtos p ON m.id_produto = p.id_produto " +
+                     "ORDER BY m.criado_em DESC";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()
+            ) {
+
+            while (rs.next()) {
+
+                MovimentacaoEstoque mov = new MovimentacaoEstoque();
+
+                mov.setIdMovimentacao(rs.getInt("id_movimentacao"));
+                mov.setNomeProduto(rs.getString("produto"));
+                mov.setTipo(rs.getString("tipo"));
+                mov.setNrNotaFiscal(rs.getString("nr_notafiscal"));
+                mov.setQuantidade(rs.getInt("quantidade"));
+                mov.setValorUnitario(rs.getBigDecimal("valor_unitario"));
+                mov.setObservacao(rs.getString("observacao"));
+                mov.setCriadoEm(rs.getString("criado_em_formatado"));
+
+                movimentacoes.add(mov);
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao listar movimentações: " + erro.getMessage());
+        }
+
+        return movimentacoes;
+    }
+
+    public List<MovimentacaoEstoque> pesquisarPorNotaFiscal(String notaFiscal) {
+
+        List<MovimentacaoEstoque> movimentacoes = new ArrayList<>();
+
+        String sql = "SELECT " +
+                     "m.id_movimentacao, " +
+                     "p.nome AS produto, " +
+                     "m.tipo, " +
+                     "m.nr_notafiscal, " +
+                     "m.quantidade, " +
+                     "m.valor_unitario, " +
+                     "m.observacao, " +
+                     "DATE_FORMAT(m.criado_em, '%d/%m/%Y %H:%i') AS criado_em_formatado " +
+                     "FROM movimentacoes_estoque m " +
+                     "INNER JOIN produtos p ON m.id_produto = p.id_produto " +
+                     "WHERE m.nr_notafiscal LIKE ? " +
+                     "ORDER BY m.criado_em DESC";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setString(1, "%" + notaFiscal + "%");
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    MovimentacaoEstoque mov = new MovimentacaoEstoque();
+
+                    mov.setIdMovimentacao(rs.getInt("id_movimentacao"));
+                    mov.setNomeProduto(rs.getString("produto"));
+                    mov.setTipo(rs.getString("tipo"));
+                    mov.setNrNotaFiscal(rs.getString("nr_notafiscal"));
+                    mov.setQuantidade(rs.getInt("quantidade"));
+                    mov.setValorUnitario(rs.getBigDecimal("valor_unitario"));
+                    mov.setObservacao(rs.getString("observacao"));
+                    mov.setCriadoEm(rs.getString("criado_em_formatado"));
+
+                    movimentacoes.add(mov);
+                }
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao pesquisar por nota fiscal: " + erro.getMessage());
+        }
+
+        return movimentacoes;
+    }
+
+    public List<MovimentacaoEstoque> pesquisarPorData(String data) {
+
+        List<MovimentacaoEstoque> movimentacoes = new ArrayList<>();
+
+        String sql = "SELECT " +
+                     "m.id_movimentacao, " +
+                     "p.nome AS produto, " +
+                     "m.tipo, " +
+                     "m.nr_notafiscal, " +
+                     "m.quantidade, " +
+                     "m.valor_unitario, " +
+                     "m.observacao, " +
+                     "DATE_FORMAT(m.criado_em, '%d/%m/%Y %H:%i') AS criado_em_formatado " +
+                     "FROM movimentacoes_estoque m " +
+                     "INNER JOIN produtos p ON m.id_produto = p.id_produto " +
+                     "WHERE DATE(m.criado_em) = ? " +
+                     "ORDER BY m.criado_em DESC";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setString(1, data);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    MovimentacaoEstoque mov = new MovimentacaoEstoque();
+
+                    mov.setIdMovimentacao(rs.getInt("id_movimentacao"));
+                    mov.setNomeProduto(rs.getString("produto"));
+                    mov.setTipo(rs.getString("tipo"));
+                    mov.setNrNotaFiscal(rs.getString("nr_notafiscal"));
+                    mov.setQuantidade(rs.getInt("quantidade"));
+                    mov.setValorUnitario(rs.getBigDecimal("valor_unitario"));
+                    mov.setObservacao(rs.getString("observacao"));
+                    mov.setCriadoEm(rs.getString("criado_em_formatado"));
+
+                    movimentacoes.add(mov);
+                }
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao pesquisar por data: " + erro.getMessage());
+        }
+
+        return movimentacoes;
     }
 }
