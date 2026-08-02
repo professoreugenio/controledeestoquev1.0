@@ -59,7 +59,7 @@ public class ProdutoDAO {
                 "FROM produtos p " +
                 "INNER JOIN categorias c ON p.id_categoria = c.id_categoria " +
                 "LEFT JOIN fornecedores f ON p.id_fornecedor = f.id_fornecedor " +
-                "WHERE p.ativo = TRUE " +
+                /*"WHERE p.ativo = TRUE " +*/
                 "ORDER BY p.nome";
 
         try (

@@ -99,21 +99,21 @@ public class TelaPrincipal extends JFrame {
 		menuClientes.add(itemListarClientes);
 		JMenu menuEstoque = new JMenu("Estoque");
 		menuBar.add(menuEstoque);
-		JMenuItem itemListarEstoque = new JMenuItem("Estoque");
+		JMenuItem itemListarEstoque = new JMenuItem("Exibir Estoque");
 		itemListarEstoque.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				carregarPainel(new PainelListarEstoque());
 			}
 		});
 		menuEstoque.add(itemListarEstoque);
-		JMenuItem itemEntradaEstoque = new JMenuItem("Entrada");
+		JMenuItem itemEntradaEstoque = new JMenuItem("Entrada no Estoque");
 		itemEntradaEstoque.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				carregarPainel(new PainelEntradaEstoque());
 			}
 		});
 		menuEstoque.add(itemEntradaEstoque);
-		JMenuItem itemSaidaEstoque = new JMenuItem("Saída");
+		JMenuItem itemSaidaEstoque = new JMenuItem("Saída do Estoque");
 		itemSaidaEstoque.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				carregarPainel(new PainelSaidaEstoque());

@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -176,19 +177,8 @@ public class MovimentacaoEstoqueDAO {
             ) {
 
             while (rs.next()) {
-
-                MovimentacaoEstoque mov = new MovimentacaoEstoque();
-
-                mov.setIdMovimentacao(rs.getInt("id_movimentacao"));
-                mov.setNomeProduto(rs.getString("produto"));
-                mov.setTipo(rs.getString("tipo"));
-                mov.setNrNotaFiscal(rs.getString("nr_notafiscal"));
-                mov.setQuantidade(rs.getInt("quantidade"));
-                mov.setValorUnitario(rs.getBigDecimal("valor_unitario"));
-                mov.setObservacao(rs.getString("observacao"));
-                mov.setCriadoEm(rs.getString("criado_em_formatado"));
-
-                movimentacoes.add(mov);
+                MovimentacaoEstoque movimentacao = montarMovimentacao(rs);
+                movimentacoes.add(movimentacao);
             }
 
         } catch (SQLException erro) {
@@ -198,7 +188,7 @@ public class MovimentacaoEstoqueDAO {
         return movimentacoes;
     }
 
-    public List<MovimentacaoEstoque> pesquisarPorNotaFiscal(String notaFiscal) {
+    public List<MovimentacaoEstoque> pesquisarPorNotaFiscal(String nrNotaFiscal) {
 
         List<MovimentacaoEstoque> movimentacoes = new ArrayList<>();
 
@@ -221,24 +211,12 @@ public class MovimentacaoEstoqueDAO {
                 PreparedStatement stmt = con.prepareStatement(sql)
             ) {
 
-            stmt.setString(1, "%" + notaFiscal + "%");
+            stmt.setString(1, "%" + nrNotaFiscal + "%");
 
             try (ResultSet rs = stmt.executeQuery()) {
-
                 while (rs.next()) {
-
-                    MovimentacaoEstoque mov = new MovimentacaoEstoque();
-
-                    mov.setIdMovimentacao(rs.getInt("id_movimentacao"));
-                    mov.setNomeProduto(rs.getString("produto"));
-                    mov.setTipo(rs.getString("tipo"));
-                    mov.setNrNotaFiscal(rs.getString("nr_notafiscal"));
-                    mov.setQuantidade(rs.getInt("quantidade"));
-                    mov.setValorUnitario(rs.getBigDecimal("valor_unitario"));
-                    mov.setObservacao(rs.getString("observacao"));
-                    mov.setCriadoEm(rs.getString("criado_em_formatado"));
-
-                    movimentacoes.add(mov);
+                    MovimentacaoEstoque movimentacao = montarMovimentacao(rs);
+                    movimentacoes.add(movimentacao);
                 }
             }
 
@@ -249,7 +227,7 @@ public class MovimentacaoEstoqueDAO {
         return movimentacoes;
     }
 
-    public List<MovimentacaoEstoque> pesquisarPorData(String data) {
+    public List<MovimentacaoEstoque> pesquisarPorData(Date data) {
 
         List<MovimentacaoEstoque> movimentacoes = new ArrayList<>();
 
@@ -272,24 +250,12 @@ public class MovimentacaoEstoqueDAO {
                 PreparedStatement stmt = con.prepareStatement(sql)
             ) {
 
-            stmt.setString(1, data);
+            stmt.setDate(1, data);
 
             try (ResultSet rs = stmt.executeQuery()) {
-
                 while (rs.next()) {
-
-                    MovimentacaoEstoque mov = new MovimentacaoEstoque();
-
-                    mov.setIdMovimentacao(rs.getInt("id_movimentacao"));
-                    mov.setNomeProduto(rs.getString("produto"));
-                    mov.setTipo(rs.getString("tipo"));
-                    mov.setNrNotaFiscal(rs.getString("nr_notafiscal"));
-                    mov.setQuantidade(rs.getInt("quantidade"));
-                    mov.setValorUnitario(rs.getBigDecimal("valor_unitario"));
-                    mov.setObservacao(rs.getString("observacao"));
-                    mov.setCriadoEm(rs.getString("criado_em_formatado"));
-
-                    movimentacoes.add(mov);
+                    MovimentacaoEstoque movimentacao = montarMovimentacao(rs);
+                    movimentacoes.add(movimentacao);
                 }
             }
 
@@ -298,5 +264,62 @@ public class MovimentacaoEstoqueDAO {
         }
 
         return movimentacoes;
+    }
+
+    public List<MovimentacaoEstoque> pesquisarPorNotaFiscalEData(String nrNotaFiscal, Date data) {
+
+        List<MovimentacaoEstoque> movimentacoes = new ArrayList<>();
+
+        String sql = "SELECT " +
+                     "m.id_movimentacao, " +
+                     "p.nome AS produto, " +
+                     "m.tipo, " +
+                     "m.nr_notafiscal, " +
+                     "m.quantidade, " +
+                     "m.valor_unitario, " +
+                     "m.observacao, " +
+                     "DATE_FORMAT(m.criado_em, '%d/%m/%Y %H:%i') AS criado_em_formatado " +
+                     "FROM movimentacoes_estoque m " +
+                     "INNER JOIN produtos p ON m.id_produto = p.id_produto " +
+                     "WHERE m.nr_notafiscal LIKE ? " +
+                     "AND DATE(m.criado_em) = ? " +
+                     "ORDER BY m.criado_em DESC";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setString(1, "%" + nrNotaFiscal + "%");
+            stmt.setDate(2, data);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    MovimentacaoEstoque movimentacao = montarMovimentacao(rs);
+                    movimentacoes.add(movimentacao);
+                }
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao pesquisar por nota fiscal e data: " + erro.getMessage());
+        }
+
+        return movimentacoes;
+    }
+
+    private MovimentacaoEstoque montarMovimentacao(ResultSet rs) throws SQLException {
+
+        MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
+
+        movimentacao.setIdMovimentacao(rs.getInt("id_movimentacao"));
+        movimentacao.setNomeProduto(rs.getString("produto"));
+        movimentacao.setTipo(rs.getString("tipo"));
+        movimentacao.setNrNotaFiscal(rs.getString("nr_notafiscal"));
+        movimentacao.setQuantidade(rs.getInt("quantidade"));
+        movimentacao.setValorUnitario(rs.getBigDecimal("valor_unitario"));
+        movimentacao.setObservacao(rs.getString("observacao"));
+        movimentacao.setCriadoEmFormatado(rs.getString("criado_em_formatado"));
+
+        return movimentacao;
     }
 }
