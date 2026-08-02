@@ -114,14 +114,17 @@ CREATE TABLE `movimentacoes_estoque` (
   `id_movimentacao` int NOT NULL AUTO_INCREMENT,
   `id_produto` int NOT NULL,
   `tipo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nr_notafiscal` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `quantidade` int NOT NULL,
   `valor_unitario` decimal(10,2) NOT NULL DEFAULT '0.00',
   `observacao` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_movimentacao`),
   KEY `fk_movimentacoes_produtos` (`id_produto`),
+  KEY `idx_movimentacoes_nr_notafiscal` (`nr_notafiscal`),
+  KEY `idx_movimentacoes_criado_em` (`criado_em`),
   CONSTRAINT `fk_movimentacoes_produtos` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id_produto`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -130,7 +133,7 @@ CREATE TABLE `movimentacoes_estoque` (
 
 LOCK TABLES `movimentacoes_estoque` WRITE;
 /*!40000 ALTER TABLE `movimentacoes_estoque` DISABLE KEYS */;
-INSERT INTO `movimentacoes_estoque` VALUES (1,4,'ENTRADA',50,5.50,'teste','2026-08-01 15:12:07'),(2,5,'ENTRADA',100,5.00,'teste','2026-08-01 15:12:45'),(3,5,'ENTRADA',200,5.00,'teste','2026-08-01 15:15:01'),(4,4,'SAIDA',150,20.00,'sdsd','2026-08-01 15:15:22');
+INSERT INTO `movimentacoes_estoque` VALUES (1,4,'ENTRADA',NULL,50,5.50,'teste','2026-08-01 15:12:07'),(2,5,'ENTRADA',NULL,100,5.00,'teste','2026-08-01 15:12:45'),(3,5,'ENTRADA',NULL,200,5.00,'teste','2026-08-01 15:15:01'),(4,4,'SAIDA',NULL,150,20.00,'sdsd','2026-08-01 15:15:22'),(5,4,'ENTRADA',NULL,100,12.50,'teste','2026-08-02 11:39:05'),(6,4,'ENTRADA','B5256',10,5.75,'TESTE DE CONTEÚDO','2026-08-02 14:33:46'),(7,1,'ENTRADA','JGB-4552',30,35.90,'TESTE TESTE RTES teste produto.','2026-08-02 16:20:45');
 /*!40000 ALTER TABLE `movimentacoes_estoque` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -167,7 +170,7 @@ CREATE TABLE `produtos` (
 
 LOCK TABLES `produtos` WRITE;
 /*!40000 ALTER TABLE `produtos` DISABLE KEYS */;
-INSERT INTO `produtos` VALUES (1,'Mouse USB','Mouse óptico com conexão USB',25.00,50.00,2,5,1,1,1,'2026-08-01 14:00:43'),(2,'Teclado USB','Teclado padrão ABNT2',40.00,80.00,100,5,1,1,1,'2026-08-01 14:00:43'),(3,'Papel A4','Resma de papel A4',18.00,30.00,50,10,2,2,1,'2026-08-01 14:00:43'),(4,'Detergente','Detergente neutro 500ml',2.00,4.50,0,20,3,2,1,'2026-08-01 14:00:43'),(5,'teste','teste',100.00,180.00,330,50,2,2,1,'2026-08-01 14:08:20');
+INSERT INTO `produtos` VALUES (1,'Mouse USB','Mouse óptico com conexão USB',25.00,50.00,32,5,1,1,1,'2026-08-01 14:00:43'),(2,'Teclado USB','Teclado padrão ABNT2',40.00,80.00,100,5,1,1,1,'2026-08-01 14:00:43'),(3,'Papel A4','Resma de papel A4',18.00,30.00,50,10,2,2,1,'2026-08-01 14:00:43'),(4,'Detergente X','Detergente neutro 500ml',2.00,4.50,110,20,3,2,1,'2026-08-01 14:00:43'),(5,'teste','teste',100.00,180.00,330,50,2,2,0,'2026-08-01 14:08:20');
 /*!40000 ALTER TABLE `produtos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -188,7 +191,7 @@ CREATE TABLE `usuarios` (
   `data_cadastro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `uk_usuario_login` (`login`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +200,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Administrador do Sistema','admin','8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92','ADMINISTRADOR',1,'2026-07-11 10:37:20'),(2,'Operador do Sistema','operador','123456','OPERADOR',1,'2026-08-01 10:51:23');
+INSERT INTO `usuarios` VALUES (1,'Master Admin','admin','8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92','ADMINISTRADOR',1,'2026-07-11 10:37:20'),(2,'Pedro Lima','operador','8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92','OPERADOR',1,'2026-08-01 10:51:23');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -210,4 +213,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-01 13:07:17
+-- Dump completed on 2026-08-02 14:38:57
