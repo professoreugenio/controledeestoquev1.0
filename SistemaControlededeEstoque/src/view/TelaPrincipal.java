@@ -19,6 +19,9 @@ import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 
+import util.PermissaoUtil;
+
+
 public class TelaPrincipal extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -69,7 +72,8 @@ public class TelaPrincipal extends JFrame {
 		JMenuItem itemNovoProduto = new JMenuItem("Novo");
 		itemNovoProduto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				carregarPainel(new PainelCadastrarProduto());
+				
+				abrirPainelSomenteAdministrador(new PainelCadastrarProduto());
 			}
 		});
 		menuProdutos.add(itemNovoProduto);
@@ -86,14 +90,15 @@ public class TelaPrincipal extends JFrame {
 		JMenuItem itemNovoCliente = new JMenuItem("Novo");
 		itemNovoCliente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				carregarPainel(new PainelCadastrarCliente());
+				abrirPainelSomenteAdministrador(new PainelCadastrarCliente());
 			}
 		});
 		menuClientes.add(itemNovoCliente);
 		JMenuItem itemListarClientes = new JMenuItem("Listar Clientes");
 		itemListarClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				 carregarPainel(new PainelListarClientes(TelaPrincipal.this));
+				
+				 abrirPainelSomenteAdministrador(new PainelListarClientes(TelaPrincipal.this));
 			}
 		});
 		menuClientes.add(itemListarClientes);
@@ -131,8 +136,8 @@ public class TelaPrincipal extends JFrame {
 		mnNewMenu.add(mntmNewMenuItem);
 		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Novo Usuário");
 		mntmNewMenuItem_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				carregarPainel(new PainelNovoUsuario());
+			public void actionPerformed(ActionEvent e) {				
+				abrirPainelSomenteAdministrador(new PainelNovoUsuario());
 			}
 		});
 		mnNewMenu.add(mntmNewMenuItem_1);
@@ -140,7 +145,8 @@ public class TelaPrincipal extends JFrame {
 		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Listar Usuários");
 		mntmNewMenuItem_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				carregarPainel(new PainelListarUsuarios());
+				
+				abrirPainelSomenteAdministrador(new PainelListarUsuarios());
 			}
 		});
 		mnNewMenu.add(mntmNewMenuItem_2);
@@ -180,6 +186,27 @@ public class TelaPrincipal extends JFrame {
 		painelConteudo.revalidate();
 		painelConteudo.repaint();
 	}
+	
+	public boolean usuarioAdministrador() {
+	    return PermissaoUtil.isAdministrador(usuarioLogado);
+	}
+
+	
+	private void abrirPainelSomenteAdministrador(JPanel painel) {
+
+	    if (!usuarioAdministrador()) {
+	        JOptionPane.showMessageDialog(
+	                this,
+	                "Acesso permitido somente para ADMINISTRADOR.",
+	                "Acesso negado",
+	                JOptionPane.WARNING_MESSAGE
+	        );
+	        return;
+	    }
+
+	    carregarPainel(painel);
+	}
+
 
 	private void exibirUsuarioLogado() {
 		if (usuarioLogado != null) {
