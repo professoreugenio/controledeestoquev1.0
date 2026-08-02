@@ -30,7 +30,7 @@ public class TelaPrincipal extends JFrame {
 	private JPanel painelConteudo;
 	private JLabel lblUsuarioLogado;
 	private Usuario usuarioLogado;
-	private TelaPrincipal telaPrincipal;
+
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {

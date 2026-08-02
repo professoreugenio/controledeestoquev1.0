@@ -12,7 +12,7 @@ public class Formatador {
             valor = BigDecimal.ZERO;
         }
 
-        NumberFormat formato = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+        NumberFormat formato = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
         return formato.format(valor);
     }
 }
