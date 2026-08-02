@@ -8,18 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.Usuario;
-import util.CriptografiaSenha;
+import util.SenhaUtil;
 
 public class UsuarioDAO {
 
-    public Usuario autenticar(String login, String senha) {
+    public Usuario autenticar(String login, String senhaDigitada) {
 
-        String senhaCriptografada = CriptografiaSenha.gerarHash(senha);
-
-        String sql = "SELECT id_usuario, nome, login, perfil, ativo " +
+        String sql = "SELECT id_usuario, nome, login, senha, perfil, ativo " +
                      "FROM usuarios " +
                      "WHERE login = ? " +
-                     "AND senha = ? " +
                      "AND ativo = TRUE";
 
         try (
@@ -28,21 +25,25 @@ public class UsuarioDAO {
             ) {
 
             stmt.setString(1, login);
-            stmt.setString(2, senhaCriptografada);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
                 if (rs.next()) {
 
-                    Usuario usuario = new Usuario();
+                    String senhaHashBanco = rs.getString("senha");
 
-                    usuario.setIdUsuario(rs.getInt("id_usuario"));
-                    usuario.setNome(rs.getString("nome"));
-                    usuario.setLogin(rs.getString("login"));
-                    usuario.setPerfil(rs.getString("perfil"));
-                    usuario.setAtivo(rs.getBoolean("ativo"));
+                    if (SenhaUtil.verificarSenha(senhaDigitada, senhaHashBanco)) {
 
-                    return usuario;
+                        Usuario usuario = new Usuario();
+                        usuario.setIdUsuario(rs.getInt("id_usuario"));
+                        usuario.setNome(rs.getString("nome"));
+                        usuario.setLogin(rs.getString("login"));
+                        usuario.setSenhaHash(senhaHashBanco);
+                        usuario.setPerfil(rs.getString("perfil"));
+                        usuario.setAtivo(rs.getBoolean("ativo"));
+
+                        return usuario;
+                    }
                 }
             }
 
@@ -57,9 +58,7 @@ public class UsuarioDAO {
 
         String sql = "INSERT INTO usuarios " +
                      "(nome, login, senha, perfil, ativo) " +
-                     "VALUES (?, ?, ?, ?, TRUE)";
-
-        String senhaCriptografada = CriptografiaSenha.gerarHash(usuario.getSenha());
+                     "VALUES (?, ?, ?, ?, ?)";
 
         try (
                 Connection con = ConexaoDAO.conectar();
@@ -68,8 +67,9 @@ public class UsuarioDAO {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getLogin());
-            stmt.setString(3, senhaCriptografada);
+            stmt.setString(3, usuario.getSenhaHash());
             stmt.setString(4, usuario.getPerfil());
+            stmt.setBoolean(5, usuario.isAtivo());
 
             int linhasAfetadas = stmt.executeUpdate();
 
@@ -87,7 +87,6 @@ public class UsuarioDAO {
 
         String sql = "SELECT id_usuario, nome, login, perfil, ativo " +
                      "FROM usuarios " +
-                     "WHERE ativo = TRUE " +
                      "ORDER BY nome";
 
         try (
@@ -116,14 +115,13 @@ public class UsuarioDAO {
         return usuarios;
     }
 
-    public List<Usuario> pesquisar(String texto) {
+    public List<Usuario> pesquisarPorNome(String nomePesquisa) {
 
         List<Usuario> usuarios = new ArrayList<>();
 
         String sql = "SELECT id_usuario, nome, login, perfil, ativo " +
                      "FROM usuarios " +
-                     "WHERE ativo = TRUE " +
-                     "AND (nome LIKE ? OR login LIKE ?) " +
+                     "WHERE nome LIKE ? " +
                      "ORDER BY nome";
 
         try (
@@ -131,8 +129,7 @@ public class UsuarioDAO {
                 PreparedStatement stmt = con.prepareStatement(sql)
             ) {
 
-            stmt.setString(1, "%" + texto + "%");
-            stmt.setString(2, "%" + texto + "%");
+            stmt.setString(1, "%" + nomePesquisa + "%");
 
             try (ResultSet rs = stmt.executeQuery()) {
 
@@ -157,17 +154,54 @@ public class UsuarioDAO {
         return usuarios;
     }
 
-    public boolean atualizarPerfil(Usuario usuario, boolean alterarSenha) {
+    public Usuario buscarPorId(int idUsuario) {
+
+        String sql = "SELECT id_usuario, nome, login, senha, perfil, ativo " +
+                     "FROM usuarios " +
+                     "WHERE id_usuario = ?";
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
+
+            stmt.setInt(1, idUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+
+                    Usuario usuario = new Usuario();
+
+                    usuario.setIdUsuario(rs.getInt("id_usuario"));
+                    usuario.setNome(rs.getString("nome"));
+                    usuario.setLogin(rs.getString("login"));
+                    usuario.setSenhaHash(rs.getString("senha"));
+                    usuario.setPerfil(rs.getString("perfil"));
+                    usuario.setAtivo(rs.getBoolean("ativo"));
+
+                    return usuario;
+                }
+            }
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao buscar usuário: " + erro.getMessage());
+        }
+
+        return null;
+    }
+
+    public boolean atualizar(Usuario usuario, String novaSenha) {
+
+        boolean alterarSenha = novaSenha != null && !novaSenha.trim().isEmpty();
 
         String sql;
 
         if (alterarSenha) {
-            sql = "UPDATE usuarios " +
-                  "SET nome = ?, login = ?, senha = ? " +
+            sql = "UPDATE usuarios SET nome = ?, login = ?, senha = ?, perfil = ?, ativo = ? " +
                   "WHERE id_usuario = ?";
         } else {
-            sql = "UPDATE usuarios " +
-                  "SET nome = ?, login = ? " +
+            sql = "UPDATE usuarios SET nome = ?, login = ?, perfil = ?, ativo = ? " +
                   "WHERE id_usuario = ?";
         }
 
@@ -176,14 +210,64 @@ public class UsuarioDAO {
                 PreparedStatement stmt = con.prepareStatement(sql)
             ) {
 
-            stmt.setString(1, usuario.getNome());
-            stmt.setString(2, usuario.getLogin());
+            if (alterarSenha) {
+
+                stmt.setString(1, usuario.getNome());
+                stmt.setString(2, usuario.getLogin());
+                stmt.setString(3, SenhaUtil.gerarHash(novaSenha));
+                stmt.setString(4, usuario.getPerfil());
+                stmt.setBoolean(5, usuario.isAtivo());
+                stmt.setInt(6, usuario.getIdUsuario());
+
+            } else {
+
+                stmt.setString(1, usuario.getNome());
+                stmt.setString(2, usuario.getLogin());
+                stmt.setString(3, usuario.getPerfil());
+                stmt.setBoolean(4, usuario.isAtivo());
+                stmt.setInt(5, usuario.getIdUsuario());
+            }
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        } catch (SQLException erro) {
+            System.out.println("Erro ao atualizar usuário: " + erro.getMessage());
+            return false;
+        }
+    }
+
+    public boolean atualizarPerfil(Usuario usuario, String novaSenha) {
+
+        boolean alterarSenha = novaSenha != null && !novaSenha.trim().isEmpty();
+
+        String sql;
+
+        if (alterarSenha) {
+            sql = "UPDATE usuarios SET nome = ?, login = ?, senha = ? " +
+                  "WHERE id_usuario = ?";
+        } else {
+            sql = "UPDATE usuarios SET nome = ?, login = ? " +
+                  "WHERE id_usuario = ?";
+        }
+
+        try (
+                Connection con = ConexaoDAO.conectar();
+                PreparedStatement stmt = con.prepareStatement(sql)
+            ) {
 
             if (alterarSenha) {
-                String senhaCriptografada = CriptografiaSenha.gerarHash(usuario.getSenha());
-                stmt.setString(3, senhaCriptografada);
+
+                stmt.setString(1, usuario.getNome());
+                stmt.setString(2, usuario.getLogin());
+                stmt.setString(3, SenhaUtil.gerarHash(novaSenha));
                 stmt.setInt(4, usuario.getIdUsuario());
+
             } else {
+
+                stmt.setString(1, usuario.getNome());
+                stmt.setString(2, usuario.getLogin());
                 stmt.setInt(3, usuario.getIdUsuario());
             }
 

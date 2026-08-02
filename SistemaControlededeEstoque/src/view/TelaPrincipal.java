@@ -25,6 +25,7 @@ public class TelaPrincipal extends JFrame {
 	private JPanel painelConteudo;
 	private JLabel lblUsuarioLogado;
 	private Usuario usuarioLogado;
+	private TelaPrincipal telaPrincipal;
 	
 	
 
@@ -122,11 +123,26 @@ public class TelaPrincipal extends JFrame {
 		JMenu mnNewMenu = new JMenu("Usuário");
 		menuBar.add(mnNewMenu);
 		JMenuItem mntmNewMenuItem = new JMenuItem("Editar Perfil");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				carregarPainel(new PainelEditarPerfil(usuarioLogado));
+			}
+		});
 		mnNewMenu.add(mntmNewMenuItem);
 		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Novo Usuário");
+		mntmNewMenuItem_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				carregarPainel(new PainelNovoUsuario());
+			}
+		});
 		mnNewMenu.add(mntmNewMenuItem_1);
 		
 		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Listar Usuários");
+		mntmNewMenuItem_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				carregarPainel(new PainelListarUsuarios());
+			}
+		});
 		mnNewMenu.add(mntmNewMenuItem_2);
 		JMenu menuSistema = new JMenu("Sistema");
 		menuBar.add(menuSistema);
