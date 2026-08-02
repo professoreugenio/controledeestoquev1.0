@@ -19,8 +19,11 @@ import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 
-import util.PermissaoUtil;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
+
+import util.PermissaoUtil;
 
 public class TelaPrincipal extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -29,8 +32,6 @@ public class TelaPrincipal extends JFrame {
 	private JLabel lblUsuarioLogado;
 	private Usuario usuarioLogado;
 	private TelaPrincipal telaPrincipal;
-	
-	
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -52,7 +53,8 @@ public class TelaPrincipal extends JFrame {
 	public TelaPrincipal(Usuario usuarioLogado) {
 		this.usuarioLogado = usuarioLogado;
 		setTitle("Sistema Controle de Estoque - Tela Principal");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
 		setBounds(100, 100, 1000, 650);
 		setLocationRelativeTo(null);
 		JMenuBar menuBar = new JMenuBar();
@@ -66,13 +68,25 @@ public class TelaPrincipal extends JFrame {
 				carregarPainel(new PainelDashboard());
 			}
 		});
+		
+		
+		
+		addWindowListener(new WindowAdapter() {
+		    @Override
+		    public void windowClosing(WindowEvent e) {
+		        confirmarSaidaParaLogin();
+		    }
+		});
+
+		
+		
 		menuInicio.add(itemDashboard);
 		JMenu menuProdutos = new JMenu("Produtos");
 		menuBar.add(menuProdutos);
 		JMenuItem itemNovoProduto = new JMenuItem("Novo");
 		itemNovoProduto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				abrirPainelSomenteAdministrador(new PainelCadastrarProduto());
 			}
 		});
@@ -80,28 +94,32 @@ public class TelaPrincipal extends JFrame {
 		JMenuItem itemListarProdutos = new JMenuItem("Listar Produtos");
 		itemListarProdutos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				carregarPainel(new PainelListarProdutos(TelaPrincipal.this));
 			}
 		});
 		menuProdutos.add(itemListarProdutos);
-		JMenu menuClientes = new JMenu("Clientes");
-		menuBar.add(menuClientes);
-		JMenuItem itemNovoCliente = new JMenuItem("Novo");
-		itemNovoCliente.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				abrirPainelSomenteAdministrador(new PainelCadastrarCliente());
-			}
-		});
-		menuClientes.add(itemNovoCliente);
-		JMenuItem itemListarClientes = new JMenuItem("Listar Clientes");
-		itemListarClientes.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				 abrirPainelSomenteAdministrador(new PainelListarClientes(TelaPrincipal.this));
-			}
-		});
-		menuClientes.add(itemListarClientes);
+
+		if ("ADMINISTRADOR".equalsIgnoreCase(usuarioLogado.getPerfil().trim())) {
+
+			JMenu menuClientes = new JMenu("Clientes");
+			menuBar.add(menuClientes);
+			JMenuItem itemNovoCliente = new JMenuItem("Novo");
+			itemNovoCliente.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					abrirPainelSomenteAdministrador(new PainelCadastrarCliente());
+				}
+			});
+			menuClientes.add(itemNovoCliente);
+			JMenuItem itemListarClientes = new JMenuItem("Listar Clientes");
+			itemListarClientes.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					abrirPainelSomenteAdministrador(new PainelListarClientes(TelaPrincipal.this));
+				}
+			});
+			menuClientes.add(itemListarClientes);
+		}
+
 		JMenu menuEstoque = new JMenu("Estoque");
 		menuBar.add(menuEstoque);
 		JMenuItem itemListarEstoque = new JMenuItem("Exibir Estoque");
@@ -125,31 +143,37 @@ public class TelaPrincipal extends JFrame {
 			}
 		});
 		menuEstoque.add(itemSaidaEstoque);
-		JMenu mnNewMenu = new JMenu("Usuário");
-		menuBar.add(mnNewMenu);
-		JMenuItem mntmNewMenuItem = new JMenuItem("Editar Perfil");
-		mntmNewMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				carregarPainel(new PainelEditarPerfil(usuarioLogado));
-			}
-		});
-		mnNewMenu.add(mntmNewMenuItem);
-		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Novo Usuário");
-		mntmNewMenuItem_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {				
-				abrirPainelSomenteAdministrador(new PainelNovoUsuario());
-			}
-		});
-		mnNewMenu.add(mntmNewMenuItem_1);
-		
-		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Listar Usuários");
-		mntmNewMenuItem_2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				abrirPainelSomenteAdministrador(new PainelListarUsuarios());
-			}
-		});
-		mnNewMenu.add(mntmNewMenuItem_2);
+
+		if ("ADMINISTRADOR".equalsIgnoreCase(usuarioLogado.getPerfil().trim())) {
+
+			JMenu mnNewMenu = new JMenu("Usuário");
+			menuBar.add(mnNewMenu);
+			JMenuItem mntmNewMenuItem = new JMenuItem("Editar Perfil");
+			mntmNewMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					carregarPainel(new PainelEditarPerfil(usuarioLogado));
+				}
+			});
+			mnNewMenu.add(mntmNewMenuItem);
+			JMenuItem mntmNewMenuItem_1 = new JMenuItem("Novo Usuário");
+			mntmNewMenuItem_1.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					abrirPainelSomenteAdministrador(new PainelNovoUsuario());
+				}
+			});
+			mnNewMenu.add(mntmNewMenuItem_1);
+
+			JMenuItem mntmNewMenuItem_2 = new JMenuItem("Listar Usuários");
+			mntmNewMenuItem_2.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+
+					abrirPainelSomenteAdministrador(new PainelListarUsuarios());
+				}
+			});
+			mnNewMenu.add(mntmNewMenuItem_2);
+
+		}
+
 		JMenu menuSistema = new JMenu("Sistema");
 		menuBar.add(menuSistema);
 		JMenuItem itemSair = new JMenuItem("Sair");
@@ -179,6 +203,45 @@ public class TelaPrincipal extends JFrame {
 		exibirUsuarioLogado();
 		carregarPainel(new PainelDashboard());
 	}
+	
+	
+	private void confirmarSaidaParaLogin() {
+
+	    int resposta = JOptionPane.showConfirmDialog(
+	            this,
+	            "Deseja sair da tela principal e voltar para o login?",
+	            "Confirmar saída",
+	            JOptionPane.YES_NO_OPTION,
+	            JOptionPane.QUESTION_MESSAGE
+	    );
+
+	    if (resposta == JOptionPane.YES_OPTION) {
+	        voltarParaLogin();
+	    }
+	}
+
+	
+	private void voltarParaLogin() {
+
+	    fecharPaineis();
+
+	    TelaLogin telaLogin = new TelaLogin();
+	    telaLogin.setLocationRelativeTo(null);
+	    telaLogin.setVisible(true);
+
+	    dispose();
+	}
+
+	
+	private void fecharPaineis() {
+
+	    if (painelConteudo != null) {
+	        painelConteudo.removeAll();
+	        painelConteudo.revalidate();
+	        painelConteudo.repaint();
+	    }
+	}
+
 
 	public void carregarPainel(JPanel painel) {
 		painelConteudo.removeAll();
@@ -186,27 +249,21 @@ public class TelaPrincipal extends JFrame {
 		painelConteudo.revalidate();
 		painelConteudo.repaint();
 	}
-	
+
 	public boolean usuarioAdministrador() {
-	    return PermissaoUtil.isAdministrador(usuarioLogado);
+		return PermissaoUtil.isAdministrador(usuarioLogado);
 	}
 
-	
 	private void abrirPainelSomenteAdministrador(JPanel painel) {
 
-	    if (!usuarioAdministrador()) {
-	        JOptionPane.showMessageDialog(
-	                this,
-	                "Acesso permitido somente para ADMINISTRADOR.",
-	                "Acesso negado",
-	                JOptionPane.WARNING_MESSAGE
-	        );
-	        return;
-	    }
+		if (!usuarioAdministrador()) {
+			JOptionPane.showMessageDialog(this, "Acesso permitido somente para ADMINISTRADOR.", "Acesso negado",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 
-	    carregarPainel(painel);
+		carregarPainel(painel);
 	}
-
 
 	private void exibirUsuarioLogado() {
 		if (usuarioLogado != null) {
@@ -217,10 +274,7 @@ public class TelaPrincipal extends JFrame {
 	}
 
 	private void sair() {
-		int resposta = JOptionPane.showConfirmDialog(this, "Deseja realmente sair do sistema?", "Confirmar saída",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-		if (resposta == JOptionPane.YES_OPTION) {
-			System.exit(0);
-		}
+	    confirmarSaidaParaLogin();
 	}
+
 }
