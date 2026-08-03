@@ -8,11 +8,11 @@ import java.sql.SQLException;
 public class TesteConexao {
 
     private static final String URL =
-            "jdbc:mysql://localhost:3307/controle_estoque_db";
+            "jdbc:mysql://localhost:3306/controle_estoque_db";
 
     private static final String USUARIO = "root";
 
-    private static final String SENHA = "&ugML$2834&2026";
+    private static final String SENHA = "Aluno";
 
 
     public static Connection conectar() throws SQLException {
