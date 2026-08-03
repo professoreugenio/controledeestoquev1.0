@@ -5,6 +5,14 @@ Projeto desenvolvido durante o curso **Programador de Sistemas**, com o objetivo
 O sistema permite controlar produtos, categorias, fornecedores, clientes, usuários e movimentações de estoque por meio de uma aplicação desktop.
 
 ---
+## 📌 Acessando o sistema
+### Admin:
+usuário: admin
+senha: 123456
+### Operador
+usuário: operador
+senha: 123456
+
 
 ## 📌 Sobre o projeto
 
