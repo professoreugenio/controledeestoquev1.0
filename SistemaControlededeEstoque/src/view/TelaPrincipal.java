@@ -235,6 +235,92 @@ public class TelaPrincipal extends JFrame {
 
             menuClientes.add(itemListarClientes);
         }
+        
+        
+        /*
+         * Menu Relatórios
+         */
+        JMenu menuRelatorios = criarMenu("Relatórios");
+        menuBar.add(menuRelatorios);
+
+        JMenuItem itemRelatorioProdutos =
+                criarItemMenu("Produtos Cadastrados");
+
+        itemRelatorioProdutos.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                carregarPainel(
+                        new PainelRelatorioProdutos()
+                );
+            }
+        });
+
+        menuRelatorios.add(itemRelatorioProdutos);
+
+        JMenuItem itemRelatorioEstoqueBaixo =
+                criarItemMenu("Estoque Baixo");
+
+        itemRelatorioEstoqueBaixo.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                carregarPainel(
+                        new PainelRelatorioEstoqueBaixo()
+                );
+            }
+        });
+
+        menuRelatorios.add(itemRelatorioEstoqueBaixo);
+
+        
+        /*
+         * Menu Fornecedores
+         *
+         * Exibido somente para administradores.
+         */
+        if (usuarioAdministrador()) {
+
+            JMenu menuFornecedores = criarMenu("Fornecedores");
+            menuBar.add(menuFornecedores);
+
+            JMenuItem itemNovoFornecedor =
+                    criarItemMenu("Novo Fornecedor");
+
+            itemNovoFornecedor.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    abrirPainelSomenteAdministrador(
+                            new PainelNovoFornecedor()
+                    );
+                }
+            });
+
+            menuFornecedores.add(itemNovoFornecedor);
+
+            JMenuItem itemListarFornecedores =
+                    criarItemMenu("Listar Fornecedores");
+
+            itemListarFornecedores.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    abrirPainelSomenteAdministrador(
+                            new PainelListarFornecedores(
+                                    TelaPrincipal.this
+                            )
+                    );
+                }
+            });
+
+            menuFornecedores.add(itemListarFornecedores);
+        }
+
 
         /*
          * Menu Estoque
@@ -357,7 +443,62 @@ public class TelaPrincipal extends JFrame {
         });
 
         menuSistema.add(itemSair);
+        
+        
+        /*
+         * Menu Sobre
+         */
+        JMenu menuSobre = criarMenu("Sobre");
+        menuBar.add(menuSobre);
+
+        JMenuItem itemSobreSistema = criarItemMenu("Sobre o Sistema");
+
+        itemSobreSistema.setAccelerator(
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_F1,
+                        0
+                )
+        );
+
+        itemSobreSistema.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exibirSobreSistema();
+            }
+        });
+
+        menuSobre.add(itemSobreSistema);
+
+        
+        
+        
     }
+    
+    
+    private void exibirSobreSistema() {
+
+        String mensagem =
+                "Sistema de Controle de Estoque\n\n" +
+                "Versão: 1.0\n" +
+                "Curso: Programador de Sistemas\n" +
+                "Professor: Eugênio\n" +
+                "Tecnologias utilizadas:\n" +
+                "- Java\n" +
+                "- Java Swing\n" +
+                "- WindowBuilder\n" +
+                "- JDBC\n" +
+                "- MySQL\n\n" +
+                "Sistema desenvolvido para fins didáticos.";
+
+        JOptionPane.showMessageDialog(
+                this,
+                mensagem,
+                "Sobre o Sistema",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
 
     /*
      * Cria o painel principal da janela.
@@ -482,20 +623,20 @@ public class TelaPrincipal extends JFrame {
      */
     private JMenu criarMenu(String texto) {
 
-        JMenu menu = new JMenu(texto);
+        JMenu menuFornecedores = new JMenu(texto);
 
-        menu.setFont(
+        menuFornecedores.setFont(
                 new Font("Segoe UI", Font.BOLD, 14)
         );
 
-        menu.setForeground(COR_TEXTO);
-        menu.setOpaque(false);
+        menuFornecedores.setForeground(COR_TEXTO);
+        menuFornecedores.setOpaque(false);
 
-        menu.setBorder(
+        menuFornecedores.setBorder(
                 new EmptyBorder(0, 13, 0, 13)
         );
 
-        return menu;
+        return menuFornecedores;
     }
 
     /*

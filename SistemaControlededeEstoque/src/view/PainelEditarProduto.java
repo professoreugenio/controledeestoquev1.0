@@ -22,6 +22,16 @@ import model.Categoria;
 import model.Fornecedor;
 import model.Produto;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import util.ImagemProdutoUtil;
+
+
 public class PainelEditarProduto extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -32,6 +42,17 @@ public class PainelEditarProduto extends JPanel {
     private JTextField txtQuantidade;
     private JTextField txtEstoqueMinimo;
     private JTextArea txtDescricao;
+    
+    private JLabel lblFotoProduto;
+    private File arquivoImagemSelecionada;
+    private String fotoAtual;
+    private boolean removerFoto;
+    
+    private JButton btnTrocarImagem;
+    private JButton btnRemoverImagem;
+    private JButton btnSalvar;
+
+
 
     private JComboBox<Categoria> comboCategoria;
     private JComboBox<Fornecedor> comboFornecedor;
@@ -103,6 +124,42 @@ public class PainelEditarProduto extends JPanel {
         txtEstoqueMinimo = new JTextField();
         txtEstoqueMinimo.setBounds(220, 245, 120, 30);
         add(txtEstoqueMinimo);
+        
+        JLabel lblFoto = new JLabel("Foto do Produto");
+        lblFoto.setBounds(710, 80, 150, 20);
+        add(lblFoto);
+
+        lblFotoProduto = new JLabel("Sem imagem");
+        lblFotoProduto.setHorizontalAlignment(SwingConstants.CENTER);
+        lblFotoProduto.setBorder(BorderFactory.createEtchedBorder());
+        lblFotoProduto.setBounds(710, 105, 190, 160);
+        add(lblFotoProduto);
+        
+        
+
+        btnTrocarImagem = new JButton("Trocar Imagem");
+        btnTrocarImagem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                escolherImagemProduto();
+            }
+        });
+        btnTrocarImagem.setBounds(710, 275, 190, 30);
+        add(btnTrocarImagem);
+
+        btnRemoverImagem = new JButton("Remover Imagem");
+        btnRemoverImagem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                removerImagemProduto();
+            }
+        });
+        btnRemoverImagem.setBounds(710, 315, 190, 30);
+        add(btnRemoverImagem);
+
+        
+        
+     
+
+
 
         JLabel lblDescricao = new JLabel("Descrição");
         lblDescricao.setBounds(80, 295, 150, 20);
@@ -115,7 +172,7 @@ public class PainelEditarProduto extends JPanel {
         txtDescricao = new JTextArea();
         scrollDescricao.setViewportView(txtDescricao);
 
-        JButton btnSalvar = new JButton("Salvar Alterações");
+        btnSalvar = new JButton("Salvar Alterações");
         btnSalvar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 salvarAlteracoes();
@@ -123,6 +180,7 @@ public class PainelEditarProduto extends JPanel {
         });
         btnSalvar.setBounds(80, 440, 160, 35);
         add(btnSalvar);
+
 
         JButton btnVoltar = new JButton("Voltar");
         btnVoltar.addActionListener(new ActionListener() {
@@ -135,14 +193,62 @@ public class PainelEditarProduto extends JPanel {
 
         carregarCategorias();
         carregarFornecedores();
+        
+        
     }
 
+    
+    private boolean usuarioOperador() {
+
+        if (telaPrincipal == null) {
+            return false;
+        }
+
+        return !telaPrincipal.usuarioAdministrador();
+    }
+
+    
+    private void bloquearCamposParaLeitura() {
+
+        txtNome.setEditable(false);
+        txtDescricao.setEditable(false);
+        txtValorCusto.setEditable(false);
+        txtValorVenda.setEditable(false);
+        txtQuantidade.setEditable(false);
+        txtEstoqueMinimo.setEditable(false);
+
+        comboCategoria.setEnabled(false);
+        comboFornecedor.setEnabled(false);
+    }
+
+    
+    private void aplicarPermissoes() {
+
+        if (usuarioOperador()) {
+
+            btnSalvar.setEnabled(false);
+            btnTrocarImagem.setEnabled(false);
+            btnRemoverImagem.setEnabled(false);
+
+            btnSalvar.setToolTipText("Usuário OPERADOR não pode salvar alterações.");
+            btnTrocarImagem.setToolTipText("Usuário OPERADOR não pode trocar imagem.");
+            btnRemoverImagem.setToolTipText("Usuário OPERADOR não pode remover imagem.");
+
+            bloquearCamposParaLeitura();
+        }
+    }
+
+    
+    
+    
     public PainelEditarProduto(TelaPrincipal telaPrincipal, int idProduto) {
         this();
         this.telaPrincipal = telaPrincipal;
         this.idProduto = idProduto;
         carregarProduto();
+        aplicarPermissoes();
     }
+
 
     private void carregarCategorias() {
 
@@ -175,6 +281,9 @@ public class PainelEditarProduto extends JPanel {
             JOptionPane.showMessageDialog(this, "Produto não encontrado.");
             return;
         }
+        
+        
+
 
         txtNome.setText(produto.getNome());
         txtDescricao.setText(produto.getDescricao());
@@ -185,7 +294,89 @@ public class PainelEditarProduto extends JPanel {
 
         selecionarCategoria(produto.getIdCategoria());
         selecionarFornecedor(produto.getIdFornecedor());
+        
+        fotoAtual = produto.getFoto();
+        ImagemProdutoUtil.exibirImagem(lblFotoProduto, fotoAtual);
     }
+    
+    
+    private void escolherImagemProduto() {
+    	
+    	
+    	if (usuarioOperador()) {
+    	    JOptionPane.showMessageDialog(
+    	            this,
+    	            "Usuário OPERADOR não possui permissão para trocar a imagem do produto.",
+    	            "Acesso negado",
+    	            JOptionPane.WARNING_MESSAGE
+    	    );
+    	    return;
+    	}
+
+
+        JFileChooser seletor = new JFileChooser();
+        seletor.setDialogTitle("Selecionar imagem do produto");
+
+        FileNameExtensionFilter filtro = new FileNameExtensionFilter(
+                "Imagens (*.jpg, *.jpeg, *.png)",
+                "jpg", "jpeg", "png"
+        );
+
+        seletor.setFileFilter(filtro);
+
+        int opcao = seletor.showOpenDialog(this);
+
+        if (opcao == JFileChooser.APPROVE_OPTION) {
+
+            File arquivo = seletor.getSelectedFile();
+
+            if (!ImagemProdutoUtil.extensaoPermitida(arquivo)) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Selecione uma imagem JPG, JPEG ou PNG.",
+                        "Arquivo inválido",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            arquivoImagemSelecionada = arquivo;
+            removerFoto = false;
+
+            ImagemProdutoUtil.exibirImagem(lblFotoProduto, arquivoImagemSelecionada.getAbsolutePath());
+        }
+    }
+
+    private void removerImagemProduto() {
+    	
+    	
+    	if (usuarioOperador()) {
+    	    JOptionPane.showMessageDialog(
+    	            this,
+    	            "Usuário OPERADOR não possui permissão para remover a imagem do produto.",
+    	            "Acesso negado",
+    	            JOptionPane.WARNING_MESSAGE
+    	    );
+    	    return;
+    	}
+
+
+        int resposta = JOptionPane.showConfirmDialog(
+                this,
+                "Deseja remover a imagem deste produto?",
+                "Remover imagem",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (resposta == JOptionPane.YES_OPTION) {
+            arquivoImagemSelecionada = null;
+            fotoAtual = null;
+            removerFoto = true;
+            ImagemProdutoUtil.limparImagem(lblFotoProduto);
+        }
+    }
+
 
     private void selecionarCategoria(int idCategoria) {
 
@@ -219,6 +410,37 @@ public class PainelEditarProduto extends JPanel {
         String valorVendaTexto = txtValorVenda.getText().trim().replace(",", ".");
         String quantidadeTexto = txtQuantidade.getText().trim();
         String estoqueMinimoTexto = txtEstoqueMinimo.getText().trim();
+        
+        
+        if (usuarioOperador()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Usuário OPERADOR não possui permissão para alterar produtos.",
+                    "Acesso negado",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        
+        String fotoFinal = fotoAtual;
+
+        if (removerFoto) {
+            fotoFinal = null;
+        } else if (arquivoImagemSelecionada != null) {
+            try {
+                fotoFinal = ImagemProdutoUtil.copiarImagem(arquivoImagemSelecionada);
+            } catch (IOException erro) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Erro ao salvar a imagem do produto: " + erro.getMessage(),
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+        }
+
 
         if (nome.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Informe o nome do produto.");
@@ -276,6 +498,8 @@ public class PainelEditarProduto extends JPanel {
             produto.setEstoqueMinimo(estoqueMinimo);
             produto.setIdCategoria(categoria.getIdCategoria());
             produto.setIdFornecedor(fornecedor.getIdFornecedor());
+            produto.setFoto(fotoFinal);
+
 
             ProdutoDAO produtoDAO = new ProdutoDAO();
             boolean atualizado = produtoDAO.atualizar(produto);

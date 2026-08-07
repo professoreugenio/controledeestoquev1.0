@@ -22,6 +22,16 @@ import model.Categoria;
 import model.Fornecedor;
 import model.Produto;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import util.ImagemProdutoUtil;
+
+
 public class PainelCadastrarProduto extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -32,6 +42,10 @@ public class PainelCadastrarProduto extends JPanel {
     private JTextField txtQuantidade;
     private JTextField txtEstoqueMinimo;
     private JTextArea txtDescricao;
+    
+    private JLabel lblFotoProduto;
+    private File arquivoImagemSelecionada;
+
 
     private JComboBox<Categoria> comboCategoria;
     private JComboBox<Fornecedor> comboFornecedor;
@@ -116,6 +130,27 @@ public class PainelCadastrarProduto extends JPanel {
 
         txtDescricao = new JTextArea();
         scrollDescricao.setViewportView(txtDescricao);
+        
+        
+        JLabel lblFoto = new JLabel("Foto do Produto");
+        lblFoto.setBounds(710, 80, 150, 20);
+        add(lblFoto);
+
+        lblFotoProduto = new JLabel("Sem imagem");
+        lblFotoProduto.setHorizontalAlignment(SwingConstants.CENTER);
+        lblFotoProduto.setBorder(BorderFactory.createEtchedBorder());
+        lblFotoProduto.setBounds(710, 105, 190, 160);
+        add(lblFotoProduto);
+
+        JButton btnEscolherImagem = new JButton("Escolher Imagem");
+        btnEscolherImagem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                escolherImagemProduto();
+            }
+        });
+        btnEscolherImagem.setBounds(710, 275, 190, 30);
+        add(btnEscolherImagem);
+
 
         JButton btnSalvar = new JButton("Salvar");
         btnSalvar.addActionListener(new ActionListener() {
@@ -138,6 +173,44 @@ public class PainelCadastrarProduto extends JPanel {
         carregarCategorias();
         carregarFornecedores();
     }
+    
+    
+    private void escolherImagemProduto() {
+
+        JFileChooser seletor = new JFileChooser();
+        seletor.setDialogTitle("Selecionar imagem do produto");
+
+        FileNameExtensionFilter filtro = new FileNameExtensionFilter(
+                "Imagens (*.jpg, *.jpeg, *.png)",
+                "jpg", "jpeg", "png"
+        );
+
+        seletor.setFileFilter(filtro);
+
+        int opcao = seletor.showOpenDialog(this);
+
+        if (opcao == JFileChooser.APPROVE_OPTION) {
+
+            File arquivo = seletor.getSelectedFile();
+
+            if (!ImagemProdutoUtil.extensaoPermitida(arquivo)) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Selecione uma imagem JPG, JPEG ou PNG.",
+                        "Arquivo inválido",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            arquivoImagemSelecionada = arquivo;
+            ImagemProdutoUtil.exibirImagem(lblFotoProduto, arquivoImagemSelecionada.getAbsolutePath());
+        }
+    }
+    
+    
+    
+
 
     private void carregarCategorias() {
 
@@ -169,6 +242,24 @@ public class PainelCadastrarProduto extends JPanel {
         String valorVendaTexto = txtValorVenda.getText().trim().replace(",", ".");
         String quantidadeTexto = txtQuantidade.getText().trim();
         String estoqueMinimoTexto = txtEstoqueMinimo.getText().trim();
+        
+        
+        String foto = null;
+
+        if (arquivoImagemSelecionada != null) {
+            try {
+                foto = ImagemProdutoUtil.copiarImagem(arquivoImagemSelecionada);
+            } catch (IOException erro) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Erro ao salvar a imagem do produto: " + erro.getMessage(),
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+        }
+
 
         if (nome.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Informe o nome do produto.");
@@ -244,19 +335,22 @@ public class PainelCadastrarProduto extends JPanel {
             Categoria categoriaSelecionada = (Categoria) comboCategoria.getSelectedItem();
             Fornecedor fornecedorSelecionado = (Fornecedor) comboFornecedor.getSelectedItem();
 
-            Produto produto = new Produto(
-                    nome,
-                    descricao,
-                    valorCusto,
-                    valorVenda,
-                    quantidade,
-                    estoqueMinimo,
-                    categoriaSelecionada.getIdCategoria(),
-                    fornecedorSelecionado.getIdFornecedor()
-            );
+            Produto produto = new Produto();
+
+            produto.setNome(nome);
+            produto.setDescricao(descricao);
+            produto.setValorCusto(valorCusto);
+            produto.setValorVenda(valorVenda);
+            produto.setQuantidadeEstoque(quantidade);
+            produto.setEstoqueMinimo(estoqueMinimo);
+            produto.setIdCategoria(categoriaSelecionada.getIdCategoria());
+            produto.setIdFornecedor(fornecedorSelecionado.getIdFornecedor());
+            produto.setFoto(foto);
 
             ProdutoDAO produtoDAO = new ProdutoDAO();
             boolean cadastrado = produtoDAO.cadastrar(produto);
+            
+            
 
             if (cadastrado) {
                 JOptionPane.showMessageDialog(
@@ -294,6 +388,10 @@ public class PainelCadastrarProduto extends JPanel {
         txtValorVenda.setText("");
         txtQuantidade.setText("");
         txtEstoqueMinimo.setText("");
+        
+        arquivoImagemSelecionada = null;
+        ImagemProdutoUtil.limparImagem(lblFotoProduto);
+
 
         if (comboCategoria.getItemCount() > 0) {
             comboCategoria.setSelectedIndex(0);

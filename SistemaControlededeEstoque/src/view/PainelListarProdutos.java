@@ -124,6 +124,7 @@ public class PainelListarProdutos extends JPanel {
         modeloTabela.addColumn("Valor Venda");
         modeloTabela.addColumn("Estoque");
         modeloTabela.addColumn("Est. Mínimo");
+        modeloTabela.addColumn("Status");
 
         tabelaProdutos.setModel(modeloTabela);
 
@@ -135,6 +136,7 @@ public class PainelListarProdutos extends JPanel {
         tabelaProdutos.getColumnModel().getColumn(5).setPreferredWidth(90);
         tabelaProdutos.getColumnModel().getColumn(6).setPreferredWidth(70);
         tabelaProdutos.getColumnModel().getColumn(7).setPreferredWidth(80);
+        tabelaProdutos.getColumnModel().getColumn(8).setPreferredWidth(40);
     }
 
     private void carregarProdutos() {
@@ -194,7 +196,8 @@ public class PainelListarProdutos extends JPanel {
                     Formatador.moeda(produto.getValorCusto()),
                     Formatador.moeda(produto.getValorVenda()),
                     produto.getQuantidadeEstoque(),
-                    produto.getEstoqueMinimo()
+                    produto.getEstoqueMinimo(),
+                    produto.getAtivo(),
             });
         }
     }
